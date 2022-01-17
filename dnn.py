@@ -12,38 +12,48 @@ U = TypeVar('T') # U stands for universe
 
 
 class Op(Generic[U]):
+    
 
     def __init__(self, arity:int, func:Callable[[list[U]],U], name:str='unknown'):
         self.arity = arity
         self.func = func
         self.name = name
+        
 
     def eval(self, args:list[U]) -> U:
         return self.func(args)
 
+    
     def __str__(self) -> str:
         return self.name
+    
 
     def arity(self) -> int :
         return self.arity
 
 
 class Neuron(Generic[U]):
+    
 
     def __init__(self, in_edges) -> None:
         self.in_edges = in_edges
+        
 
     def set_op(self, operation:Op[U]) -> None:
         self.op = operation
+        
 
-    def activate(self, inputs:tuple[U]) -> None:
+    def activate(self, inputs:tuple[U]) -> U:
         self.value = self.op(inputs)
+        return self.value
 
+        
     def value(self) -> U:
         return self.value
 
 
 class NeuralNet(Generic[U]):
+
     
     def __init__(self, arity:int, architecture:list[list[list[int]]], neighborhood_func:Callable[[Op[U]],list[Op[U]]], loss_func:Callable[[Op[U],Op[U]],float]):
         """
@@ -56,22 +66,25 @@ class NeuralNet(Generic[U]):
         self.nbhd_func = neighborhood_func
         self.loss_func = loss_func
         self.arity = arity
-        self.layers = tuple(tuple(Neuron[U](n) for n in l) for l in architecture)
+        self.layers = [[Neuron[U](n) for n in l] for l in architecture]
 
-    def layer_at(self, i:int) -> tuple[Neuron[U]]:
+        
+    def layer_at(self, i:int) -> list[Neuron[U]]:
         return self.layers[i]
 
+    
     def feed_forward(self, args:list[U]) -> U:
         self.input_layer = tuple(x for x in args)
         for neuron in self.layer_at(0):
-            input = tuple(args[k] for k in neuron.in_edges)
+            input = [args[k] for k in neuron.in_edges]
             neuron.activate(*input)
         for i in range(1, len(self.layers)):
             for neuron in self.layer_at(i):
-                input = tuple(args[k] for k in neuron.in_edges)
+                input = [args[k] for k in neuron.in_edges]
                 neuron.activate(*input)
         return self.layer_at(len(self.layers)-1)[0].value
 
+    
     def to_graphviz(self, graph_name:str) -> Graph:
         g = Graph(comment=graph_name)
         with g.subgraph(name='cluster_0') as c: # input cluster

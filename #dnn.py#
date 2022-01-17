@@ -43,8 +43,9 @@ class Neuron(Generic[U]):
         self.op = operation
         
 
-    def activate(self, inputs:tuple[U]) -> None:
+    def activate(self, inputs:tuple[U]) -> U:
         self.value = self.op(inputs)
+        return self.value
 
         
     def value(self) -> U:
@@ -65,21 +66,21 @@ class NeuralNet(Generic[U]):
         self.nbhd_func = neighborhood_func
         self.loss_func = loss_func
         self.arity = arity
-        self.layers = tuple(tuple(Neuron[U](n) for n in l) for l in architecture)
+        self.layers = [[Neuron[U](n) for n in l] for l in architecture]
 
         
-    def layer_at(self, i:int) -> tuple[Neuron[U]]:
+    def layer_at(self, i:int) -> list[Neuron[U]]:
         return self.layers[i]
 
     
     def feed_forward(self, args:list[U]) -> U:
-        self.input_layer = tuple(x for x in args)
+        self.input_layer = [x for x in args]
         for neuron in self.layer_at(0):
-            input = tuple(args[k] for k in neuron.in_edges)
+            input = [args[k] for k in neuron.in_edges]
             neuron.activate(*input)
         for i in range(1, len(self.layers)):
             for neuron in self.layer_at(i):
-                input = tuple(args[k] for k in neuron.in_edges)
+                input = [args[k] for k in neuron.in_edges]
                 neuron.activate(*input)
         return self.layer_at(len(self.layers)-1)[0].value
 
