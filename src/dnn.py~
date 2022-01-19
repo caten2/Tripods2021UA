@@ -21,7 +21,7 @@ class Op(Generic[U]):
         
 
     def eval(self, args:list[U]) -> U:
-        return self.func(args)
+        return self.func(*args)
 
     
     def __str__(self) -> str:
@@ -43,11 +43,15 @@ class Neuron(Generic[U]):
         self.op = operation
         
 
-    def activate(self, inputs:tuple[U]) -> U:
-        self.value = self.op(inputs)
+    def activate(self, inputs:list[U]) -> U:
+        self.value = self.op.eval(inputs)
         return self.value
 
-        
+    
+    def __str__(self):
+        return str(self.op)
+
+    
     def value(self) -> U:
         return self.value
 
@@ -77,27 +81,28 @@ class NeuralNet(Generic[U]):
         self.input_layer = tuple(x for x in args)
         for neuron in self.layer_at(0):
             input = [args[k] for k in neuron.in_edges]
-            neuron.activate(*input)
+            neuron.activate(input)
         for i in range(1, len(self.layers)):
             for neuron in self.layer_at(i):
                 input = [args[k] for k in neuron.in_edges]
-                neuron.activate(*input)
+                neuron.activate(input)
         return self.layer_at(len(self.layers)-1)[0].value
 
     
     def to_graphviz(self, graph_name:str) -> Graph:
         g = Graph(comment=graph_name)
         with g.subgraph(name='cluster_0') as c: # input cluster
-            c.attr(color='blue', label='input')
+            c.attr(color='blue', label='input', rankdir='LR')
             for j, var in enumerate(self.input_layer):
                 c.node('0_'+str(j), label=str(var), shape='rectangle')
         for i in range(len(self.layers)-1):
             id = str(i+1)
             with g.subgraph(name="cluster_"+id) as c:
                 for j, neuron in enumerate(self.layer_at(i)):
-                    c.node(str(id)+'_'+str(j), label=str(neuron))
-                    id_neuron = str(i)+'_'+str(j)
+                    c.node(id+'_'+str(j), label=str(neuron))
+                    id_neuron = id+'_'+str(j)
                     for k in neuron.in_edges:
-                        c.edge(str(i-1)+'_'+k, id_neuron)
+                        c.edge(str(i)+'_'+str(k), id_neuron)
                 c.node_attr['style'] = 'filled'
                 c.attr(color='blue', label='L'+id)
+        return g

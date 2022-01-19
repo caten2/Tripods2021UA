@@ -1,0 +1,77 @@
+// test graph
+graph {
+	graph [rankdir=LR ranksep=1.4 splines=false]
+	subgraph cluster_0 {
+		color=none label=input rank=same
+		"0_0" [label=0 shape=square]
+		"0_1" [label=0 shape=square]
+		"0_2" [label=0 shape=square]
+		"0_3" [label=0 shape=square]
+		"0_4" [label=0 shape=square]
+	}
+	subgraph cluster_1 {
+		node [color=lightblue style=filled]
+		color=none label=L1 rank=same
+		"1_0" [label=id shape=circle]
+		"0_0" -- "1_0"
+		"0_1" -- "1_0"
+		"0_2" -- "1_0"
+		"1_1" [label=id shape=circle]
+		"0_1" -- "1_1"
+		"0_3" -- "1_1"
+		"0_4" -- "1_1"
+		"1_2" [label=id shape=circle]
+		"0_1" -- "1_2"
+		"1_3" [label=id shape=circle]
+		"0_0" -- "1_3"
+		"0_2" -- "1_3"
+		"1_4" [label=id shape=circle]
+		"0_3" -- "1_4"
+		"0_4" -- "1_4"
+	}
+	subgraph cluster_2 {
+		node [color=lightblue style=filled]
+		color=none label=L2 rank=same
+		"2_0" [label=id shape=circle]
+		"1_0" -- "2_0"
+		"1_3" -- "2_0"
+		"2_1" [label=id shape=circle]
+		"1_0" -- "2_1"
+		"1_1" -- "2_1"
+		"1_2" -- "2_1"
+		"1_3" -- "2_1"
+		"2_2" [label=id shape=circle]
+		"1_1" -- "2_2"
+		"1_2" -- "2_2"
+		"1_4" -- "2_2"
+		"2_3" [label=id shape=circle]
+		"1_2" -- "2_3"
+		"2_4" [label=id shape=circle]
+		"1_4" -- "2_4"
+	}
+	subgraph cluster_3 {
+		node [color=lightblue style=filled]
+		color=none label=L3 rank=same
+		"3_0" [label=id shape=circle]
+		"2_1" -- "3_0"
+		"2_2" -- "3_0"
+		"3_1" [label=id shape=circle]
+		"2_2" -- "3_1"
+		"3_2" [label=id shape=circle]
+		"2_0" -- "3_2"
+		"2_1" -- "3_2"
+		"2_2" -- "3_2"
+		"2_4" -- "3_2"
+		"3_3" [label=id shape=circle]
+		"2_3" -- "3_3"
+		"2_4" -- "3_3"
+	}
+	subgraph cluster_4 {
+		color=none label=output
+		"4_0" [label=id shape=circle]
+		"3_0" -- "4_0"
+		"3_1" -- "4_0"
+		"3_2" -- "4_0"
+		"3_3" -- "4_0"
+	}
+}
