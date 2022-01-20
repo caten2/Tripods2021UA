@@ -48,7 +48,7 @@ class Neuron(Generic[U]):
         return self.value
 
     
-    def __str__(self):
+    def op_as_str(self) -> str:
         return str(self.op)
 
     
@@ -63,9 +63,9 @@ class NeuralNet(Generic[U]):
         """
         Parameters
         ----------
-        architecture : architecture[i][j] is the list of in-edges from the previous layer for jth neuron at ith layer. Input edges not included
-        neighborhood_func : Takes an operation on U and returns a list of neighbor operations
-        loss_func : Loss function
+        architecture : architecture[i][j] is the list of in-edges from the previous layer for jth neuron at ith layer. Input edges not included.
+        neighborhood_func : Takes an operation on U and returns a list of neighbor operations.
+        loss_func : Loss function.
         """
         self.nbhd_func = neighborhood_func
         self.loss_func = loss_func
@@ -89,30 +89,41 @@ class NeuralNet(Generic[U]):
         return self.layer_at(len(self.layers)-1)[0].value
 
     
-    def to_graphviz(self, graph_name:str) -> Graph:
-        g = Graph(comment=graph_name)
-        g.attr('graph', splines='false', rankdir='LR', ranksep='1.4')
-        with g.subgraph(name='cluster_0') as c: # input cluster
-            c.attr(color='none', label='input', rank='same')
-            for j, var in enumerate(self.input_layer):
-                c.node('0_'+str(j), label=str(var), shape='square')
-        for i in range(len(self.layers)-1):
+    def to_graphviz(self, caption:str, show_vals:bool=False) -> Graph:
+        """
+        Parameters
+        ----------
+        caption : caption for the graph.
+        show_vals : whether to display the current values of neurons.
+        """
+        def helper(i, g):
             id = str(i+1)
+            prev_layer_neuron_count = self.arity if i==0 else len(self.layer_at(i-1))
             with g.subgraph(name="cluster_"+id) as c:
                 c.node_attr['style'] = 'filled'
                 c.node_attr['color'] = 'lightblue'
-                c.attr(color='none', label='L'+id, rank='same')
+                c.attr(color='none', label='L'+id)
                 for j, neuron in enumerate(self.layer_at(i)):
-                    c.node(id+'_'+str(j), label=str(neuron), shape='circle')
+                    node_label = neuron.op_as_str()
+                    if show_vals: node_label += '\\n'+str(neuron.value)
+                    c.node(id+'_'+str(j), label=node_label, shape='square', style='rounded')
                     id_neuron = id+'_'+str(j)
-                    for k in neuron.in_edges:
-                        c.edge(str(i)+'_'+str(k), id_neuron)
+                    for k in range(prev_layer_neuron_count):
+                        if k in neuron.in_edges:
+                            c.edge(str(i)+'_'+str(k), id_neuron)
+                        else:
+                            c.edge(str(i)+'_'+str(k), id_neuron, style='invis')
+        #>>>>>>>>>> end of helper func <<<<<<<<<<#
+        g = Graph()
+        g.attr('graph', constraint='false', clusterrank='local')
+        g.node_attr['fontname']='helvetica'
+        g.attr('graph', splines='false', rankdir='LR', ranksep='1.5', label=caption)
+        with g.subgraph(name='cluster_0') as c: # input cluster
+            c.attr(color='none', label='input')
+            for j, var in enumerate(self.input_layer):
+                c.node('0_'+str(j), label=str(var), shape='circle')
+        for i in range(len(self.layers)-1):
+            helper(i, g)
         i = len(self.layers)-1
-        with g.subgraph(name='cluster_'+str(i+1)) as c: # output cluster
-            c.attr(color='none', label='output')
-            for j, neuron in enumerate(self.layer_at(i)):
-                c.node(str(i+1)+'_'+str(j), label=str(neuron), shape='circle')
-                id_neuron = str(i+1)+'_'+str(j)
-                for k in neuron.in_edges:
-                    c.edge(str(i)+'_'+str(k), id_neuron)
+        helper(i,g)
         return g

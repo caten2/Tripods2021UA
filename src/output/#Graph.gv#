@@ -1,7 +1,6 @@
 graph {
 	node [fontname=helvetica]
-	graph [clusterrank=local constraint=false]
-	graph [label="test graph" rankdir=LR ranksep=1.5 splines=false]
+	graph [label="test graph" rankdir=LR ranksep=1.5 splines=line]
 	subgraph cluster_0 {
 		color=none label=input
 		"0_0" [label=9 shape=circle]
@@ -12,113 +11,73 @@ graph {
 	}
 	subgraph cluster_1 {
 		node [color=lightblue style=filled]
+		edge [constraint=false]
 		color=none label=L1
 		"1_0" [label="x-y*z\n4" shape=square style=rounded]
 		"0_0" -- "1_0"
 		"0_1" -- "1_0"
 		"0_2" -- "1_0"
-		"0_3" -- "1_0" [style=invis]
-		"0_4" -- "1_0" [style=invis]
 		"1_1" [label="x-y*z\n-5" shape=square style=rounded]
-		"0_0" -- "1_1" [style=invis]
 		"0_1" -- "1_1"
-		"0_2" -- "1_1" [style=invis]
 		"0_3" -- "1_1"
 		"0_4" -- "1_1"
-		"1_2" [label="π\n1" shape=square style=rounded]
-		"0_0" -- "1_2" [style=invis]
+		"1_2" [label="x\n1" shape=square style=rounded]
 		"0_1" -- "1_2"
-		"0_2" -- "1_2" [style=invis]
-		"0_3" -- "1_2" [style=invis]
-		"0_4" -- "1_2" [style=invis]
 		"1_3" [label="x+y\n14" shape=square style=rounded]
 		"0_0" -- "1_3"
-		"0_1" -- "1_3" [style=invis]
 		"0_2" -- "1_3"
-		"0_3" -- "1_3" [style=invis]
-		"0_4" -- "1_3" [style=invis]
 		"1_4" [label="x+y\n5" shape=square style=rounded]
-		"0_0" -- "1_4" [style=invis]
-		"0_1" -- "1_4" [style=invis]
-		"0_2" -- "1_4" [style=invis]
 		"0_3" -- "1_4"
 		"0_4" -- "1_4"
 	}
 	subgraph cluster_2 {
 		node [color=lightblue style=filled]
+		edge [constraint=false]
 		color=none label=L2
 		"2_0" [label="x+y\n11" shape=square style=rounded]
 		"1_0" -- "2_0"
-		"1_1" -- "2_0" [style=invis]
-		"1_2" -- "2_0" [style=invis]
 		"1_3" -- "2_0"
-		"1_4" -- "2_0" [style=invis]
 		"2_1" [label="x*y-z*w\n-1" shape=square style=rounded]
 		"1_0" -- "2_1"
 		"1_1" -- "2_1"
 		"1_2" -- "2_1"
 		"1_3" -- "2_1"
-		"1_4" -- "2_1" [style=invis]
 		"2_2" [label="x-y*z\n-14" shape=square style=rounded]
-		"1_0" -- "2_2" [style=invis]
 		"1_1" -- "2_2"
 		"1_2" -- "2_2"
-		"1_3" -- "2_2" [style=invis]
 		"1_4" -- "2_2"
-		"2_3" [label="π\n5" shape=square style=rounded]
-		"1_0" -- "2_3" [style=invis]
-		"1_1" -- "2_3" [style=invis]
+		"2_3" [label="x\n5" shape=square style=rounded]
 		"1_2" -- "2_3"
-		"1_3" -- "2_3" [style=invis]
-		"1_4" -- "2_3" [style=invis]
-		"2_4" [label="π\n3" shape=square style=rounded]
-		"1_0" -- "2_4" [style=invis]
-		"1_1" -- "2_4" [style=invis]
-		"1_2" -- "2_4" [style=invis]
-		"1_3" -- "2_4" [style=invis]
-		"1_4" -- "2_4"
-	}
+		"2_4" [label="x\n3" shape=square style=rounded]
+		"1_4" -- "2_4"	}
 	subgraph cluster_3 {
 		node [color=lightblue style=filled]
+		edge [constraint=false]
 		color=none label=L3
 		"3_0" [label="x+y\n6" shape=square style=rounded]
-		"2_0" -- "3_0" [style=invis]
 		"2_1" -- "3_0"
 		"2_2" -- "3_0"
-		"2_3" -- "3_0" [style=invis]
-		"2_4" -- "3_0" [style=invis]
-		"3_1" [label="π\n5" shape=square style=rounded]
-		"2_0" -- "3_1" [style=invis]
-		"2_1" -- "3_1" [style=invis]
+		"3_1" [label="x\n5" shape=square style=rounded]
 		"2_2" -- "3_1"
-		"2_3" -- "3_1" [style=invis]
-		"2_4" -- "3_1" [style=invis]
 		"3_2" [label="x*y-z*w\n-6" shape=square style=rounded]
 		"2_0" -- "3_2"
 		"2_1" -- "3_2"
 		"2_2" -- "3_2"
-		"2_3" -- "3_2" [style=invis]
 		"2_4" -- "3_2"
 		"3_3" [label="x+y\n5" shape=square style=rounded]
-		"2_0" -- "3_3" [style=invis]
-		"2_1" -- "3_3" [style=invis]
-		"2_2" -- "3_3" [style=invis]
 		"2_3" -- "3_3"
 		"2_4" -- "3_3"
 	}
 	subgraph cluster_4 {
 		node [color=lightblue style=filled]
+		edge [constraint=false]
 		color=none label=L4
 		"4_0" [label="x+y\n3" shape=square style=rounded]
-		"3_0" -- "4_0" [style=invis]
 		"3_1" -- "4_0"
-		"3_2" -- "4_0" [style=invis]
 		"3_3" -- "4_0"
 		"4_1" [label="x+y\n14" shape=square style=rounded]
 		"3_0" -- "4_1"
-		"3_1" -- "4_1" [style=invis]
 		"3_2" -- "4_1"
-		"3_3" -- "4_1" [style=invis]
 		"4_2" [label="x*y-z*w\n-1" shape=square style=rounded]
 		"3_0" -- "4_2"
 		"3_1" -- "4_2"
@@ -127,10 +86,12 @@ graph {
 	}
 	subgraph cluster_5 {
 		node [color=lightblue style=filled]
-		color=none label=L5
+		edge [constraint=false]
+		color=none label=output
 		"5_0" [label="x-y*z\n4" shape=square style=rounded]
 		"4_0" -- "5_0"
 		"4_1" -- "5_0"
 		"4_2" -- "5_0"
 	}
+	
 }

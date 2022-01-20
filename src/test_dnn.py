@@ -8,14 +8,15 @@ architecture = [
     [[0,1,2], [1,3,4], [1], [0,2], [3,4]],
     [[0,3], [0,1,2,3], [1,2,4], [2], [4]],
     [[1,2], [2], [0,1,2,4], [3,4]],
-    [[0,1,2,3]]
+    [[1,3], [0,2], [0,1,2,3]],
+    [[0,1,2]]
 ]
 
 ops = [
-    Op(1, lambda x: x, name='id'),
-    Op(1, lambda x,y: x, name='id'),
-    Op(1, lambda x,y,z: x, name='id'),
-    Op(1, lambda x,y,z,w: x, name='id')
+    Op(1, lambda x: x, name='π'),
+    Op(1, lambda x,y: x+y, name='x+y'),
+    Op(1, lambda x,y,z: x-y*z, name='x-y*z'),
+    Op(1, lambda x,y,z,w: x*y-z*w, name='x*y-z*w')
     ]
 
 nbhd_func = lambda f: []
@@ -28,7 +29,7 @@ for layer in dnn.layers:
         act_func = ops[len(neuron.in_edges)-1]
         neuron.set_op(act_func)
 
-dnn.feed_forward([0,0,0,0,0])
+dnn.feed_forward([9,1,5,2,3])
 
-dot = dnn.to_graphviz('test graph')
+dot = dnn.to_graphviz('test graph', show_vals=True)
 dot.render(directory='output', view=True)
