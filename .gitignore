@@ -130,3 +130,7 @@ dmypy.json
 
 # Emacs
 .dir-locals.el
+.dir-locals.el~
+
+# PyCharm
+.idea/
