@@ -134,3 +134,6 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+# Experiment images
+src/output/*.png
