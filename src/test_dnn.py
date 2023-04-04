@@ -1,5 +1,5 @@
 from graphviz import Graph
-from dnn import Op, Neuron, NeuralNet
+from discrete_neural_net import Op, Neuron, NeuralNet
 from typing import TypeVar, Generic
 
 arity = 5
