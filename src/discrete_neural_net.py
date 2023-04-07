@@ -3,6 +3,7 @@ Discrete neural net
 """
 
 import random
+import numpy
 
 
 class Operation:
@@ -10,7 +11,6 @@ class Operation:
     A finitary operation on a set.
 
     Attributes:
-        universe (iterable): The basic objects which serve as inputs and outputs for the operation.
         arity (int): The number of arguments the operation takes. This quantity should be at least 0. A 0-ary
             Operation takes empty tuples as arguments. See the method __getitem__ below for more information on this.
         func (function): The function which is used to compute the output value of the Operation when applied to some
@@ -21,12 +21,11 @@ class Operation:
             that can be indexed.
     """
 
-    def __init__(self, universe, arity, func, cache_values=True):
+    def __init__(self, arity, func, cache_values=True):
         """
         Create a finitary operation on a set.
 
         Arguments:
-            universe (iterable): The basic objects which serve as inputs and outputs for the operation.
             arity (int): The number of arguments the operation takes. This quantity should be at least 0. A 0-ary
                 Operation takes empty tuples as arguments. See the method __getitem__ below for more information on
                 this.
@@ -35,7 +34,6 @@ class Operation:
             cache_values (bool): Whether to store already-computed values of the Operation in memory.
         """
 
-        self.universe = universe
         self.arity = arity
         self.func = func
         self.cache_values = cache_values
@@ -143,12 +141,29 @@ class NeuralNet:
                 current_vals[neuron] = neuron.activation_func[index]
         return tuple(current_vals[neuron] for neuron in self.architecture[-1].neurons)
 
-    def train(self, training_pairs, neighbor_func, loss_func):
+    def empirical_loss(self, training_pairs, loss_func):
         """
-        Train the neural net using the given training pairs, neighbor function, and loss function. At each step a
-        random non-input neuron is explored. The neighbor function tells us which other activation functions we should
-        try in place of the one already present at that neuron. We use the loss function and the training pairs to
-        determine which of these alternative activation functions we should use at the given neuron instead.
+        Calculate the current empirical loss of the neural net with respect to the training pairs and loss function.
+
+        Argument:
+            training_pairs (iterable): Training pairs (x,y) where x is a dictionary of inputs and y is a tuple of
+                outputs.
+            loss_func (function): The loss function to use for training.
+
+        Returns:
+
+        """
+
+        # Create a list of loss function values for each pair in our training set, then average them.
+        return numpy.average([loss_func(self.feed_forward(x), y) for (x, y) in training_pairs])
+
+    def training_step(self, training_pairs, neighbor_func, loss_func):
+        """
+        Perform one step of training the neural net using the given training pairs, neighbor function,
+        and loss function. At each step a random non-input neuron is explored. The neighbor function tells us which
+        other activation functions we should try in place of the one already present at that neuron. We use the loss
+        function and the training pairs to determine which of these alternative activation functions we should use at
+        the given neuron instead.
 
         Arguments:
             training_pairs (iterable): Training pairs (x,y) where x is a dictionary of inputs and y is a tuple of
@@ -162,20 +177,35 @@ class NeuralNet:
         layer = random.choice(self.architecture[1:])
         # Choose a random neuron from that layer.
         neuron = random.choice(layer.neurons)
-        # Keep a list of all the operations we've tried so far.
-        operations = []
+        # Store a list of all the adjacent operations given by the supplied neighbor function.
+        ops = neighbor_func(neuron.activation_func)
         # Also keep a list of the empirical loss associated with each of the operations in `operations`.
         emp_loss = []
         # Try each of the operations indicated by the supplied neighbor function.
-        for neighbor_op in neighbor_func(neuron):
+        for neighbor_op in ops:
             # Change the activation function of `neuron` to the current candidate under consideration.
             neuron.activation_func = neighbor_op
-            # Create a list of loss function values for each pair in our training set.
-            vals = [loss_func(self.feed_forward(x), y) for (x, y) in training_pairs]
-            # Add `neighbor_op` to the list of considered operations.
-            operations.append(neighbor_op)
             # Add the corresponding empirical loss (the average of the loss values) to the list of empirical losses.
-            emp_loss.append(np.average(vals))
+            emp_loss.append(self.empirical_loss(training_pairs, loss_func))
         # Conclude the training step by changing the activation function of `neuron` to the candidate activation
         # function which results in the lowest empirical loss.
-        neuron.activation_func = operations[emp_loss.index(min(emp_loss))]
+        neuron.activation_func = ops[emp_loss.index(min(emp_loss))]
+
+    def train(self, training_pairs, neighbor_func, loss_func, iterations, report_loss=False):
+        """
+
+        Args:
+            training_pairs:
+            neighbor_func:
+            loss_func:
+            iterations:
+            report_loss:
+
+        Returns:
+
+        """
+
+        for _ in range(iterations):
+            self.training_step(training_pairs, neighbor_func, loss_func)
+        if report_loss:
+            print(self.empirical_loss(training_pairs, loss_func))
