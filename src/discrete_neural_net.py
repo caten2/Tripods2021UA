@@ -2,40 +2,62 @@
 Discrete neural net
 """
 
-import numpy as np
 import random
-# from graphviz import Graph
 
 
 class Operation:
     """
+    A finitary operation on a set.
 
+    Attributes:
+        universe (iterable): The basic objects which serve as inputs and outputs for the operation.
+        arity (int): The number of arguments the operation takes. This quantity should be at least 0. A 0-ary
+            Operation takes empty tuples as arguments. See the method __getitem__ below for more information on this.
+        func (function): The function which is used to compute the output value of the Operation when applied to some
+            inputs.
+        cache_values (bool): Whether to store already-computed values of the Operation in memory.
+        values (dict): If `cache_values` is True then this attribute will keep track of which input-output pairs have
+            already been computed for this Operation so that they may be reused. This can be replaced by another object
+            that can be indexed.
     """
 
-    def __init__(self, order, arity, func, cache_values=True):
+    def __init__(self, universe, arity, func, cache_values=True):
+        """
+        Create a finitary operation on a set.
+
+        Arguments:
+            universe (iterable): The basic objects which serve as inputs and outputs for the operation.
+            arity (int): The number of arguments the operation takes. This quantity should be at least 0. A 0-ary
+                Operation takes empty tuples as arguments. See the method __getitem__ below for more information on
+                this.
+            func (function): The function which is used to compute the output value of the Operation when applied to
+                some inputs.
+            cache_values (bool): Whether to store already-computed values of the Operation in memory.
         """
 
-        """
-
-        self.order = order
+        self.universe = universe
         self.arity = arity
         self.func = func
         self.cache_values = cache_values
         if self.cache_values:
-            self.values = -np.ones(arity * [order])
+            self.values = {}
 
     def __getitem__(self, index):
         """
+        Compute the value of the Operation on given inputs.
 
+        Argument:
+            index (tuple): The tuple of inputs to plug in to the Operation.
         """
 
-        if self.cache_values and self.arity == 0:
-            if self.values == -1:
-                self.values = self.func(index)
-        if self.cache_values and self.arity > 0:
-            if self.values[index] == -1:
-                self.values[index] = self.func(index)
-            return int(self.values[index])
+        if self.cache_values:
+            if self.arity == 0:
+                if not self.values:
+                    self.values = self.func(index)
+            if self.arity > 0:
+                if index not in self.values.keys():
+                    self.values[index] = self.func(index)
+            return self.values[index]
         return self.func(index)
 
 
@@ -54,7 +76,7 @@ class Neuron:
 
         Arguments:
             activation_func (Operation): The activation function of the neuron.
-            inputs (list of Neuron): The neurons which act as inputs to the neuron in question.
+            inputs ((tuple of str) or (list of Neuron)): The neurons which act as inputs to the neuron in question.
         """
 
         self.activation_func = activation_func
@@ -63,10 +85,24 @@ class Neuron:
 
 class Layer:
     """
+    A layer in a neural net.
 
+    Attribute:
+        neurons ((tuple of str) or (list of Neuron)): If `neurons` is a tuple of str then we take the corresponding
+                Layer object to be an input layer for a neural net, with the entries of `neurons` being distinct
+                variable names for the arguments to the neural net.
     """
 
     def __init__(self, neurons):
+        """
+        Construct a layer with a given collection of neurons.
+
+        Argument:
+            neurons ((tuple of str) or (list of Neuron)): If `neurons` is a tuple of str then we take the corresponding
+                Layer object to be an input layer for a neural net, with the entries of `neurons` being distinct
+                variable names for the arguments to the neural net.
+        """
+
         self.neurons = neurons
 
 
@@ -74,7 +110,7 @@ class NeuralNet:
     """
     A (discrete) neural net.
 
-    Attributes:
+    Attribute:
         architecture (list of Layer): The layers of the neural net, starting with the input layer,
             whose neurons should be a list of distinct variable names. Later layers should consist
             of Neurons carrying activation functions.
@@ -82,6 +118,8 @@ class NeuralNet:
 
     def __init__(self, architecture):
         """
+
+        Argument:
 
         """
 
@@ -91,8 +129,8 @@ class NeuralNet:
         """
         Feed the values `x` forward through the neural net.
 
-        Arguments:
-            x (dict of str: int): An assignment of variable names to values.
+        Argument:
+            x (dict): An assignment of variable names to values.
 
         Returns:
             tuple: The current values of each of the output layer neurons after feeding forward.
@@ -107,6 +145,10 @@ class NeuralNet:
 
     def train(self, training_pairs, neighbor_func, loss_func):
         """
+        Train the neural net using the given training pairs, neighbor function, and loss function. At each step a
+        random non-input neuron is explored. The neighbor function tells us which other activation functions we should
+        try in place of the one already present at that neuron. We use the loss function and the training pairs to
+        determine which of these alternative activation functions we should use at the given neuron instead.
 
         Arguments:
             training_pairs (iterable): Training pairs (x,y) where x is a dictionary of inputs and y is a tuple of
@@ -116,56 +158,24 @@ class NeuralNet:
             loss_func (function): The loss function to use for training.
         """
 
+        # Select a random non-input layer from the neural net.
         layer = random.choice(self.architecture[1:])
+        # Choose a random neuron from that layer.
         neuron = random.choice(layer.neurons)
+        # Keep a list of all the operations we've tried so far.
         operations = []
+        # Also keep a list of the empirical loss associated with each of the operations in `operations`.
         emp_loss = []
+        # Try each of the operations indicated by the supplied neighbor function.
         for neighbor_op in neighbor_func(neuron):
-            vals = []
-            for (x,y) in training_pairs:
-                neuron.activation_func = neighbor_op
-                vals.append(loss_func(self.feed_forward(x),y))
+            # Change the activation function of `neuron` to the current candidate under consideration.
+            neuron.activation_func = neighbor_op
+            # Create a list of loss function values for each pair in our training set.
+            vals = [loss_func(self.feed_forward(x), y) for (x, y) in training_pairs]
+            # Add `neighbor_op` to the list of considered operations.
             operations.append(neighbor_op)
+            # Add the corresponding empirical loss (the average of the loss values) to the list of empirical losses.
             emp_loss.append(np.average(vals))
+        # Conclude the training step by changing the activation function of `neuron` to the candidate activation
+        # function which results in the lowest empirical loss.
         neuron.activation_func = operations[emp_loss.index(min(emp_loss))]
-
-    # def to_graphviz(self, caption: str, show_vals: bool = False) -> Graph:
-    #     """
-    #     Parameters
-    #     ----------
-    #     caption : caption for the graph.
-    #     show_vals : whether to display the current values of neurons.
-    #     """
-    #
-    #     def helper(i, g):
-    #         id = str(i + 1)
-    #         prev_layer_neuron_count = self.arity if i == 0 else len(self.layer_at(i - 1))
-    #         with g.subgraph(name="cluster_" + id) as c:
-    #             c.node_attr['style'] = 'filled'
-    #             c.node_attr['color'] = 'lightblue'
-    #             c.attr(color='none', label='L' + id)
-    #             for j, neuron in enumerate(self.layer_at(i)):
-    #                 node_label = neuron.op_as_str()
-    #                 if show_vals: node_label += '\\n' + str(neuron.value)
-    #                 c.node(id + '_' + str(j), label=node_label, shape='square', style='rounded')
-    #                 id_neuron = id + '_' + str(j)
-    #                 for k in range(prev_layer_neuron_count):
-    #                     if k in neuron.in_edges:
-    #                         c.edge(str(i) + '_' + str(k), id_neuron)
-    #                     else:
-    #                         c.edge(str(i) + '_' + str(k), id_neuron, style='invis')
-    #
-    #     # >>>>>>>>>> end of helper func <<<<<<<<<<#
-    #     g = Graph()
-    #     g.attr('graph', constraint='false', clusterrank='local')
-    #     g.node_attr['fontname'] = 'helvetica'
-    #     g.attr('graph', splines='false', rankdir='LR', ranksep='1.5', label=caption)
-    #     with g.subgraph(name='cluster_0') as c:  # input cluster
-    #         c.attr(color='none', label='input')
-    #         for j, var in enumerate(self.input_layer):
-    #             c.node('0_' + str(j), label=str(var), shape='circle')
-    #     for i in range(len(self.layers) - 1):
-    #         helper(i, g)
-    #     i = len(self.layers) - 1
-    #     helper(i, g)
-    #     return g
