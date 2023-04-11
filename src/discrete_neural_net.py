@@ -104,6 +104,22 @@ class Layer:
         self.neurons = neurons
 
 
+def zero_one_loss(x, y):
+    """
+    Compute the 0-1 loss for a given pair of tuples.
+    The input tuples should have the same length.
+
+    Arguments:
+        x (tuple): A tuple of outputs from feeding forward through a neural net.
+        y (tuple): A tuple of target outputs from a training set.
+
+    Returns:
+        int: Either 0 (the tuples agree) or 1 (the tuples do not agree).
+    """
+
+    return 1-(x == y)
+
+
 class NeuralNet:
     """
     A (discrete) neural net.
@@ -116,9 +132,12 @@ class NeuralNet:
 
     def __init__(self, architecture):
         """
+        Construct a neural net with a given architecture.
 
         Argument:
-
+            architecture (list of Layer): The layers of the neural net, starting with the input layer,
+                whose neurons should be a list of distinct variable names. Later layers should consist
+                of Neurons carrying activation functions.
         """
 
         self.architecture = architecture
@@ -128,7 +147,7 @@ class NeuralNet:
         Feed the values `x` forward through the neural net.
 
         Argument:
-            x (dict): An assignment of variable names to values.
+            x (dict of str: object): An assignment of variable names to values.
 
         Returns:
             tuple: The current values of each of the output layer neurons after feeding forward.
@@ -141,23 +160,24 @@ class NeuralNet:
                 current_vals[neuron] = neuron.activation_func[index]
         return tuple(current_vals[neuron] for neuron in self.architecture[-1].neurons)
 
-    def empirical_loss(self, training_pairs, loss_func):
+    def empirical_loss(self, training_pairs, loss_func=zero_one_loss):
         """
         Calculate the current empirical loss of the neural net with respect to the training pairs and loss function.
 
         Argument:
             training_pairs (iterable): Training pairs (x,y) where x is a dictionary of inputs and y is a tuple of
                 outputs.
-            loss_func (function): The loss function to use for training.
+            loss_func (function): The loss function to use for training. The default is the 0-1 loss.
 
         Returns:
-
+            numpy.float64: The empirical loss. This is a float between 0 and 1, with 0 meaning our model is perfect on
+                the training set and 1 being complete failure.
         """
 
         # Create a list of loss function values for each pair in our training set, then average them.
         return numpy.average([loss_func(self.feed_forward(x), y) for (x, y) in training_pairs])
 
-    def training_step(self, training_pairs, neighbor_func, loss_func):
+    def training_step(self, training_pairs, neighbor_func, loss_func=zero_one_loss):
         """
         Perform one step of training the neural net using the given training pairs, neighbor function,
         and loss function. At each step a random non-input neuron is explored. The neighbor function tells us which
@@ -170,7 +190,7 @@ class NeuralNet:
                 outputs.
             neighbor_func (function): A function which takes an Operation as input and returns an iterable of
                 Operations as output.
-            loss_func (function): The loss function to use for training.
+            loss_func (function): The loss function to use for training. The default is the 0-1 loss.
         """
 
         # Select a random non-input layer from the neural net.
@@ -179,9 +199,9 @@ class NeuralNet:
         neuron = random.choice(layer.neurons)
         # Store a list of all the adjacent operations given by the supplied neighbor function.
         ops = neighbor_func(neuron.activation_func)
-        # Also keep a list of the empirical loss associated with each of the operations in `operations`.
+        # Also keep a list of the empirical loss associated with each of the operations in `ops`.
         emp_loss = []
-        # Try each of the operations indicated by the supplied neighbor function.
+        # Try each of the operations in `ops`.
         for neighbor_op in ops:
             # Change the activation function of `neuron` to the current candidate under consideration.
             neuron.activation_func = neighbor_op
@@ -191,18 +211,18 @@ class NeuralNet:
         # function which results in the lowest empirical loss.
         neuron.activation_func = ops[emp_loss.index(min(emp_loss))]
 
-    def train(self, training_pairs, neighbor_func, loss_func, iterations, report_loss=False):
+    def train(self, training_pairs, neighbor_func, iterations, loss_func=zero_one_loss, report_loss=False):
         """
+        Train the neural net by performing the training step repeatedly.
 
-        Args:
-            training_pairs:
-            neighbor_func:
-            loss_func:
-            iterations:
-            report_loss:
-
-        Returns:
-
+        Arguments:
+            training_pairs (iterable): Training pairs (x,y) where x is a dictionary of inputs and y is a tuple of
+                outputs.
+            neighbor_func (function): A function which takes an Operation as input and returns an iterable of
+                Operations as output.
+            loss_func (function): The loss function to use for training. The default is the 0-1 loss.
+            iterations (int): The number of training steps to perform.
+            report_loss (bool): Whether to print the final empirical loss after the training has concluded
         """
 
         for _ in range(iterations):

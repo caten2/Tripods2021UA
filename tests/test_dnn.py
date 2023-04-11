@@ -28,10 +28,15 @@ net = NeuralNet([layer0, layer1, layer2])
 print(net.feed_forward({'x0': 0, 'x1': 1, 'x2': 2}))
 print()
 
-# We create a training set in an effort to each our net how to compute (x0+x1)*(x1+x2).
+# We create a training set in an effort to teach our net how to compute (x0+x1)*(x1+x2).
 # We'll do this modulo `order`.
-training_pairs = [({'x0': x[0], 'x1': x[1], 'x2': x[2]}, ((x[0] + x[1]) * (x[1] + x[2])) % order)
+training_pairs = [({'x0': x[0], 'x1': x[1], 'x2': x[2]}, (((x[0] + x[1]) * (x[1] + x[2])) % order,))
                   for x in product(range(order // 2 + 1), repeat=3)]
+
+# We can check out empirical loss with respect to this training set.
+# Our loss function will just be the 0-1 loss.
+print(net.empirical_loss(training_pairs))
+print()
 
 
 def neighbor_func(op):
@@ -51,7 +56,6 @@ def neighbor_func(op):
             operations.RandomOperation(order, 2)]
 
 
-# Our loss function will just be the 0-1 loss.
 # We can now begin training.
 # Usually it will only take a few training steps to learn to replace the random operation with addition.
-net.train(training_pairs, neighbor_func, lambda x, y: 1-int(x[0] == y), 5, True)
+net.train(training_pairs, neighbor_func, 5, report_loss=True)
