@@ -3,18 +3,7 @@ Check that MNIST training/test data is functioning
 """
 
 import mnist_training_binary
-
-
-def show(image):
-    """
-    Examine a binary image by printing its entries.
-
-    Argument:
-        image (list of (list of int)): The binary image to be displayed.
-    """
-
-    for row in image:
-        print(''.join(str(x) for x in row))
+from mnist_training_binary import show
 
 
 # Create a list of 1000 training pairs.

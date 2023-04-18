@@ -88,3 +88,15 @@ def binary_train_for_zero(quantity, cutoff=127):
         else:
             new_pairs.append((pair[0],all_white))
     return new_pairs
+
+
+def show(image):
+    """
+    Examine a binary image by printing its entries.
+
+    Argument:
+        image (list of (list of int)): The binary image to be displayed.
+    """
+
+    for row in image:
+        print(''.join(str(x) for x in row))
