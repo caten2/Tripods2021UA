@@ -100,3 +100,4 @@ def show(image):
 
     for row in image:
         print(''.join(str(x) for x in row))
+    print()

@@ -94,7 +94,7 @@ class BlankingEndomorphism(Operation):
                            cache_values=False)
 
 
-def dot_product(x,y):
+def dot_product(x, y):
     """
     Take the dot product of two binary images over the finite field of order 2.
 
@@ -107,5 +107,46 @@ def dot_product(x,y):
     """
 
     size = len(x)
-    return sum(x[i][j] for i,j in product(range(size), repeat=2)) % 2
+    return sum(x[i][j]*y[i][j] for i, j in product(range(size), repeat=2)) % 2
 
+
+def indicator_polymorphism(i, j, a, c):
+    """
+    Perform an indicator polymorphism where the either blank (all zeroes) or the binary image with a
+    single black pixel at position (`i`,`j`).
+
+    Args:
+        i (int): The row where the single black pixel appears.
+        j (int): The column where the single black pixel appears.
+        a (iterable of (list of (list of int))):
+        c (iterable of (list of (list of int))): A sequence of binary images with which dot products are to be taken.
+
+    Returns:
+        list of (list of int): The binary image obtained by applying the indicator polymorphism.
+    """
+
+    size = len(a[0])
+    img = [(size*[0])[:] for _ in range(size)]
+    if all(dot_product(a[k], c[k]) for k in range(len(a))):
+        img[i][j] = 1
+    return img
+
+
+class IndicatorPolymorphism(Operation):
+    """
+    Create a polymorphism of the Hamming graph by taking dot products with fixed binary images.
+    """
+
+    def __init__(self, i, j, c):
+        """
+        Create an indicator polymorphism where the output image is either blank (all zeroes) or the binary image with a
+        single black pixel at position (`i`,`j`).
+
+        Args:
+            i (int): The row where the single black pixel appears.
+            j (int): The column where the single black pixel appears.
+            c (iterable of (list of (list of int))): A sequence of binary images with which dot products are to be
+                taken.
+        """
+
+        Operation.__init__(self, len(c), lambda a: indicator_polymorphism(i, j, a, c), cache_values=False)

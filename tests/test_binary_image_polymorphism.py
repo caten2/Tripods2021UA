@@ -3,7 +3,7 @@ Tests for binary image polymorphisms
 """
 
 from binary_image_polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism,\
-    BlankingEndomorphism
+    BlankingEndomorphism, IndicatorPolymorphism
 from mnist_training_binary import binary_train_for_zero, show
 
 # Load some binary images from the modified MNIST training set.
@@ -16,27 +16,22 @@ print('Original image')
 img = training_pairs[24][0]
 # Display the original.
 show(img)
-print()
 # Display the rotated image.
 print('Rotated image')
 show(rot[img])
-print()
 # We can rotate by any number of quarter turns.
 print('Rotated half a turn')
 rot2 = RotationAutomorphism(2)
 show(rot2[img])
-print()
 print('Rotated three quarter turns')
 rot3 = RotationAutomorphism(3)
 show(rot3[img])
-print()
 
 # Create a reflection automorphism.
 refl = ReflectionAutomorphism()
 # Reflect our test image.
 print('Reflected image')
 show(refl[img])
-print()
 # We can compose rotations and reflections.
 print('Rotated and reflected image')
 show(rot[refl[img]])
@@ -46,19 +41,39 @@ swap = SwappingAutomorphism(training_pairs[37][0])
 # Display the image used for swapping.
 print('Image to use for swap')
 show(training_pairs[37][0])
-print()
 # Swap an image.
 print('Swapped image')
 show(swap[img])
-print()
 
 # Create a blanking endomorphism.
 blank = BlankingEndomorphism(training_pairs[37][0])
 # Display the image used for blanking.
 print('Image to use for blanking')
 show(training_pairs[37][0])
-print()
 # Swap an image.
 print('Blanked image')
 show(blank[img])
-print()
+
+# Create a binary indicator polymorphism.
+ind_pol = IndicatorPolymorphism(0, 0, [training_pairs[2][0], training_pairs[51][0]])
+# Display the images used for dot products.
+print('First image for dot product')
+show(training_pairs[2][0])
+print('Second image used for dot product')
+show(training_pairs[51][0])
+# Display a pair of images to which to apply the polymorphism.
+img1 = training_pairs[3][0]
+img2 = training_pairs[5][0]
+print('First input image')
+show(img1)
+print('Second input image')
+show(img2)
+# Apply the polymorphism.
+print('Image obtained from polymorphism')
+show(ind_pol[img1, img2])
+# Change one of the inputs and check the new output.
+print('New first input')
+img3 = training_pairs[34][0]
+show(img3)
+print('New image obtained from polymorphism')
+show(ind_pol[img3, img2])
