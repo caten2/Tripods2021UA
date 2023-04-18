@@ -135,3 +135,5 @@ dmypy.json
 # PyCharm
 .idea/
 
+# Stored Trees, Dominions, and Homomorphisms
+Tree1/

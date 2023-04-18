@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import copy
+from discrete_neural_net import Operation
+from numpy import array
 
 
 class Graph:
@@ -51,6 +53,39 @@ class Graph:
 
     def setRoot(self, vertex):
         self.root = vertex
+
+    def makeTreeFile(self, treeNumber):
+            fileName="Tree"+str(treeNumber)+"\Tree"+str(treeNumber)+".txt"
+            treeFile=open(fileName, "w")
+
+
+            vertices=""
+            edges=""
+            if hasattr(self,"vertices"):
+                vertices=self.vertices
+            if hasattr(self, "edges"):
+                edges=self.edges
+
+            treeFile.write(f'{vertices}\n{edges}')
+
+            treeFile.close()
+
+
+class GAlpha(Operation):
+    
+
+    def __init__(self, dominion, alpha):
+        def _func(image1, image2):
+            weights=psiK(image1, image2, n)     #maybe store n as an input instead of a random var
+            temp=dominion(weights)
+            return alpha(temp)
+
+        Operation.__init__(self, 2, _func)
+
+
+
+
+    
 
 
 def new_row(row, set_of_labels, constraint_graph=None):
@@ -166,6 +201,34 @@ def readDominion(file, n):
     return dominion
 
 
+def readTree(fileName):
+    file=open(fileName, "r")
+    tree=Graph()
+    line1=file.readline()
+    for i in range(0, len(line1)):
+        if line1[i].isdigit():
+            tree.addVertex(int(line1[i]))
+
+    line2=file.readline()
+    line2=line2.split("}")
+
+    list=[]
+    for item in line2:
+        item=item.replace(",","")
+        item=item.replace(" ","")
+        list.append(item.replace("{",""))
+
+    for item in list:
+        if not item=="":
+            index1=item[0]
+            for j in range(2, len(item)):
+                tree.addEdge(int(index1),int(item[j]))
+
+    file.close()
+
+    return tree
+
+
 # --------------------functions for creating activation functions------------------------------
 
 
@@ -215,16 +278,14 @@ def randomAdjacent(image):
 
 
 # runs recursion step for getHomomorphism
-# *****in progress*****
 # have each step modify then return alpha
 def getHelper(L, root, neighbors, alpha):
-    print("root: " + str(root))  # delete
-    # print(neighbors)    #delete
+    #print("root: " + str(root))  # delete
     if neighbors == None:
         return alpha
     else:
         for node in neighbors:
-            print(node)
+            #print(node)
             alpha.update({int(node): randomAdjacent(alpha.get(int(root)))})
             newNeighbors = L.getNeighbors(node)
             newNeighbors.remove(root)
@@ -233,9 +294,7 @@ def getHelper(L, root, neighbors, alpha):
     return alpha
 
 
-# This should give the homomorphism from tree L to Ham_n
-# currently explores nodes in the correct order but doesn't associate them with anything in Hamming graph yet
-# *****in progress*****
+# This creates a homomorphism from tree L to Ham_n
 def getHomomorphism(L, n):
     r = L.root
     alpha = {int(r): drawImage(n)}
@@ -244,21 +303,95 @@ def getHomomorphism(L, n):
     return getHelper(L, r, L.getNeighbors(r), alpha)
 
 
-# creates g_alpha by composing psi, D, and alpha
-# Does D function on the output of psiK or on the Hamming weight graph?
-# *****in progress*****
-n = 3
 
 
-def getGAlpha(image1, image2):
-    def _new_fnc():
-        weights = psiK(image1, image2, n)
-        return
 
-    return _new_fnc()
+def dominionToFnc(dominion):
+    return lambda weights: dominion[weights[1]][weights[2]]
+        
+
+
+
+def alphaTextToFnc(alphaText):
+    alphaDict=eval(alphaText)
+    return lambda node: alphaDict[node]
+
+
+n=3
+def getGAlpha(image1, image2, treeNum):
+    #Pick random dominion and homomorphism
+    fileNameD="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(random.randint(0, 19))+".txt"
+    fileNameH="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(random.randint(0, 19))+".txt"
+    dominion=readDominion(fileNameD, n)      #check this is the correct n
+    homomorphismFile=open(fileNameH, "r")
+
+    
+    dominionFnc=dominionToFnc(dominion)
+    alphaFnc=alphaTextToFnc(homomorphismFile.read())
+    
+
+    gAlpha=GAlpha(dominionFnc, alphaFnc)      #universe, arity, func: How do we reprsent the universe? arity=2; What do we list for func?
+
+
+    homomorphismFile.close()
+
 
 
 # --------------------test and run functions------------------------------
+
+#Given a tree, generates a set number of dominions and stores them as text files. Note that a folder with the corresponding treeNum must already be set up
+def generateDominions(tree, treeNum, dominionNum):
+
+    for i in range (0, dominionNum):
+        fileName="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(i)+".txt"
+        dominionFile=open(fileName, "w")
+
+        dominionFile.write(str(random_dominion(3,labels, tree)))
+
+        dominionFile.close()
+
+
+#Given a tree, generates a set number of homomorphsisms and stores them as text files. Note that a folder with the corresponding treeNum must already be set up
+def generateHomomorphisms(tree, treeNum, homomNum, n):
+
+    for i in range (0, homomNum):
+        fileName="Tree"+str(treeNum)+"\Homomorphisms\Tree"+str(treeNum)+"-Homomorphism"+str(i)+".txt"
+        homomFile=open(fileName, "w")
+
+        homomFile.write(str(getHomomorphism(tree, n)))
+
+        homomFile.close()
+
+
+
+
+
+
+getGAlpha(1,2,1)    #first 2 inputs should be images not ints
+
+
+
+
+
+
+
+
+"""
+#CODE THAT RUNS OR TESTS EXISTING FUNCTIONS:
+
+
+#Creates a random tree and generates 20 dominions and 20 homomorphisms. Currently this is set so you manually update treeNumber each time you make a new tree
+labels={1, 2, 3, 4, 5}
+L=random_tree(labels)
+print(L)
+treeNumber=1
+L.makeTreeFile(treeNumber)
+print(readTree("Tree1\Tree1.txt"))
+generateDominions(L, 1, 20)
+L=readTree("Tree1\Tree1.txt")
+L.setRoot(1)
+generateHomomorphisms(L, 1, 20, 2)
+
 
 
 # Creates a tree L for testing getHomomorphism
@@ -276,51 +409,45 @@ L.setRoot(1)
 
 print(L)
 
-alpha = getHomomorphism(L, 2)
-print(alpha)
 
-"""
-#CODE THAT RUNS OR TESTS EXISTING FUNCTIONS:
-#Creates a random tree and generates 20 dominions. Currently this is set so you manually update treeNumber each time
-# you make a new tree
-labels={1, 2, 3, 4, 5}
-L=random_tree(labels)
-print(L)
-treeNumber=0
-for i in range (0, 20):
-    fileName="Dominions\Tree"+str(treeNumber)+"-Dominion"+str(i)+".txt"
-    dominionFile=open(fileName, "w")
-    dominionFile.write(str(random_dominion(3,labels, L)))
-    dominionFile.close()
+
 
 #Creates a random tree given a list of labels and tests the getNeighbors function
 testList={"test1", "test2", "test3", "test4", "test5","test6"}
 tree=random_tree(testList)
 print(tree)
 print(tree.getNeighbors('test1'))
+
+
+
 #This chunk of code is to test applyDominion
 #runs dominion reader
 file=open(r"Dominions\Tree0-Dominion4.txt", "r")
 dominion=readDominion(file, 3)
+
 #constructs two 3x3 images and runs psi_k
 image1=[[0, 0, 1],[0, 0, 0],[1, 0, 0]]
 image2=[[0, 0, 0],[0, 0, 0],[0, 1, 0]]
 weights=psiK(image1, image2, 3)
+
 print(applyDominion(dominion, weights))         #row 2, column 1 (indexed from 0)
+
+
 file.close()
 """
 
-# Note: every 3x3 dominion with label set size 3 had at least one 3 in - is this a feature of the program or just
-# coincidence? - also random trees with three labels kept generating same tree
+#Note: every 3x3 dominion with label set size 3 had at least one 3 in in - is this a feature of the program or just coincidence? - also random trees with three labels kept generating same tree
 
-# still to code:
-# reconstruct tree from file
-# construct alpha from file
-# alpha:
-# store alpha as a file
-# s_alpha
-# store g_alpha
+#still to code:
+    #construct alpha from file
+    #alpha:
+        #store alpha as a file
+    #g_alpha
+        #code g_alpha
+        #store g_alpha
 
-# adjustments to code:
-# dominions need to be large enough to work with any nxn image (ie for 3x3 images dominion should be 10x10)
-# store a folder for each tree with tree file and folders for dominions and homomorphisms
+    #check out labels var in generateDominions - susbstituting tree.vertices would probably work
+    #figure out a better way to get n as an input in _func
+
+#adjustments to code:
+    #dominions need to be large enough to work with any nxn image (eg for 3x3 images dominion should be 10x10)
