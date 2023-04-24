@@ -1,6 +1,7 @@
 """
 Polymorphisms for binary images
 """
+import random
 
 from discrete_neural_net import Operation
 from itertools import product
@@ -17,7 +18,7 @@ def quarter_turn(x):
         list of (list of int): The same image rotated by a quarter turn counterclockwise.
     """
 
-    return [[x[i][j] for i in range(len(x))] for j in range(len(x))[::-1]]
+    return [[x[i][j] for i in range(len(x))] for j in range(len(x) - 1, -1, -1)]
 
 
 class RotationAutomorphism(Operation):
@@ -34,13 +35,13 @@ class RotationAutomorphism(Operation):
         """
 
         if k % 4 == 0:
-            func = lambda x: x
+            func = lambda x: x[0]
         if k % 4 == 1:
-            func = quarter_turn
+            func = lambda x: quarter_turn(x[0])
         if k % 4 == 2:
-            func = lambda x: quarter_turn(quarter_turn(x))
+            func = lambda x: quarter_turn(quarter_turn(x[0]))
         if k % 4 == 3:
-            func = lambda x: quarter_turn(quarter_turn(quarter_turn(x)))
+            func = lambda x: quarter_turn(quarter_turn(quarter_turn(x[0])))
         Operation.__init__(self, 1, func=func, cache_values=False)
 
 
@@ -54,7 +55,7 @@ class ReflectionAutomorphism(Operation):
         Create a reflection automorphism.
         """
 
-        Operation.__init__(self, 1, lambda x: [[x[i][j] for j in range(len(x))[::-1]] for i in range(len(x))],
+        Operation.__init__(self, 1, lambda x: [[x[0][i][j] for j in range(len(x[0]) - 1, -1, -1)] for i in range(len(x[0]))],
                            cache_values=False)
 
 
@@ -72,7 +73,7 @@ class SwappingAutomorphism(Operation):
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: [[(a[i][j] + b[i][j]) % 2 for j in range(size)] for i in range(size)],
+        Operation.__init__(self, 1, lambda a: [[(a[0][i][j] + b[i][j]) % 2 for j in range(size)] for i in range(size)],
                            cache_values=False)
 
 
@@ -90,7 +91,7 @@ class BlankingEndomorphism(Operation):
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: [[a[i][j] * b[i][j] for j in range(size)] for i in range(size)],
+        Operation.__init__(self, 1, lambda a: [[a[0][i][j] * b[i][j] for j in range(size)] for i in range(size)],
                            cache_values=False)
 
 
@@ -107,7 +108,7 @@ def dot_product(x, y):
     """
 
     size = len(x)
-    return sum(x[i][j]*y[i][j] for i, j in product(range(size), repeat=2)) % 2
+    return sum(x[i][j] * y[i][j] for i, j in product(range(size), repeat=2)) % 2
 
 
 def indicator_polymorphism(i, j, a, c):
@@ -126,7 +127,7 @@ def indicator_polymorphism(i, j, a, c):
     """
 
     size = len(a[0])
-    img = [(size*[0])[:] for _ in range(size)]
+    img = [(size * [0])[:] for _ in range(size)]
     if all(dot_product(a[k], c[k]) for k in range(len(a))):
         img[i][j] = 1
     return img
@@ -150,3 +151,71 @@ class IndicatorPolymorphism(Operation):
         """
 
         Operation.__init__(self, len(c), lambda a: indicator_polymorphism(i, j, a, c), cache_values=False)
+
+
+def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
+    """
+
+    Arguments:
+        op (Operation): A binary image polymorphism operation.
+        num_of_neighbors (int): The amount of possible neighbors to generate.
+        constant_images (list of (list of (list of int))): A list of binary images to use as constants.
+
+    Returns:
+
+    """
+
+    endomorphisms = []
+    endomorphisms += [RotationAutomorphism(k) for k in range(4)]
+    endomorphisms.append(ReflectionAutomorphism())
+    endomorphisms.append('Swapping')
+    endomorphisms.append('Blanking')
+    neighbors = [op]
+    for _ in range(num_of_neighbors):
+        twist = random.choice((0, 1))
+        if twist:
+            endomorphisms_to_use = random.choices(endomorphisms, k=op.arity + 1)
+            for i in range(len(endomorphisms_to_use)):
+                if endomorphisms_to_use[i] == 'Blanking':
+                    endomorphisms_to_use[i] = BlankingEndomorphism(random.choice(constant_images))
+                if endomorphisms_to_use[i] == 'Swapping':
+                    endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_images))
+            # def _test(x):
+            #     print(endomorphisms_to_use)
+            #     print(x)
+            #     print(op.arity)
+            #     print(endomorphisms_to_use[0])
+            #     print(endomorphisms_to_use[0][x])
+            #     index = [endomorphisms_to_use[j][x[j], ] for j in range(op.arity)]
+            #     print('Index: '+str(index))
+            #     print(endomorphisms_to_use[-1][op.func(index), ])
+            #     return endomorphisms_to_use[-1][op.func(index), ]
+            # neighbors.append(Operation(op.arity, _test, cache_values=False))
+            neighbors.append(Operation(op.arity, lambda x: endomorphisms_to_use[-1][op.func([endomorphisms_to_use[j][x[j], ] for j in range(op.arity)]), ], cache_values=False))
+        else:
+            if op.arity == 1:
+                random_endomorphism = random.choice(endomorphisms)
+                if random_endomorphism == 'Blanking':
+                    random_endomorphism = BlankingEndomorphism(random.choice(constant_images))
+                if random_endomorphism == 'Swapping':
+                    random_endomorphism = SwappingAutomorphism(random.choice(constant_images))
+                neighbors.append(random_endomorphism)
+            if op.arity > 1:
+                neighbors.append(IndicatorPolymorphism(random.choice(range(28)), random.choice(range(28)),
+                                                       random.choices(constant_images, k=op.arity)))
+    return neighbors
+
+
+def hamming_distance(x, y):
+    """
+    Compute the Hamming distance between a pair of binary images.
+
+    Args:
+        x:
+        y:
+
+    Returns:
+
+    """
+
+    return sum(x[i][j] != y[i][j] for i, j in product(range(len(x)), repeat=2))
