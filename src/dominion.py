@@ -72,17 +72,56 @@ class Graph:
 
 
 class GAlpha(Operation):
-    
 
     def __init__(self, dominion, alpha):
         def _func(image1, image2):
-            weights=psiK(image1, image2, n)     #maybe store n as an input instead of a random var
+            weights=psiK(image1, image2)
             temp=dominion(weights)
             return alpha(temp)
 
-        Operation.__init__(self, 2, _func)
+        Operation.__init__(self, 2, _func, False)
+
+    #making this more specific (the generic parent version is probably better but it was giving me errors so I'm writing this for now)
+    #errors are because of index type so I changed __init__ to not store values, probably want to change back
+    def __getitem__(self, index):
+        """
+        Compute the value of the Operation on given inputs.
+
+        Argument:
+            index (tuple): The tuple of inputs to plug in to the Operation.
+        """
+
+        if self.cache_values:
+            if self.arity == 0:
+                if not self.values:
+                    self.values = self.func(index[0],index[1])
+            if self.arity > 0:
+                if tuple(index) not in tuple(self.values.keys()):
+                    #self.values is a dictionary where the key is the input to the function and the value is the function output
+                    #error is definitely with index as input to self.values - currently index is a tuple but the elements of the tuple are images, which are lists of lists, which are unhashable and thus can't be keys in dictionaries
+                    self.values[tuple(index)] = self.func(index[0],index[1])
+            return self.values[tuple(index)]
+        return self.func(index[0],index[1])
 
 
+
+"""
+def __getitem__(self, index):
+        
+        Compute the value of the Operation on given inputs.
+        Argument:
+            index (tuple): The tuple of inputs to plug in to the Operation.
+        
+
+        if self.cache_values:
+            if self.arity == 0:
+                if not self.values:
+                    self.values = self.func(index)
+            if self.arity > 0:
+                if index not in self.values.keys():
+                    self.values[index] = self.func(index)
+            return self.values[index]
+        return self.func(index)"""
 
 
     
@@ -187,7 +226,9 @@ def draw_dominion(dominion, colmap, name):
 
 
 # reads a dominion that's been stored as a file and returns a dominon as an np array
-def readDominion(file, n):
+#I think this might hard code a 3x3 dominion
+def readDominion(fileName):
+    file=open(fileName, "r")
     fileText = file.read()
     dominion = np.zeros((3, 3))
     n = 0
@@ -197,6 +238,7 @@ def readDominion(file, n):
                 n += 1
             dominion[i][j] = list(fileText)[n]
             n += 1
+    file.close()
 
     return dominion
 
@@ -233,12 +275,13 @@ def readTree(fileName):
 
 
 # runs psi_k by counting the number of black squares (squares with value 1)
-def psiK(image1, image2, n):
+#assumes that we're using a 28x28 image
+def psiK(image1, image2):
     images = [image1, image2]
     counter = [0, 0]
     for i in range(0, 2):
-        for j in range(0, n):
-            for k in range(0, n):
+        for j in range(0, 28):
+            for k in range(0, 28):
                 if images[i][j][k] == 1:
                     counter[i] += 1
     return counter
@@ -249,11 +292,11 @@ def applyDominion(D, weights):
     return D[weights[0]][weights[1]]
 
 
-# returns a random nxn binary image
-def drawImage(n):
-    image = np.empty((n, n))
-    for i in range(0, n):
-        for j in range(0, n):
+# returns a random dim*dim binary image (dimension dim)
+def drawImage(dim):
+    image = np.empty((dim, dim))
+    for i in range(0, dim):
+        for j in range(0, dim):
             image[i][j] = random.randint(0, 1)
     return image
 
@@ -307,51 +350,55 @@ def getHomomorphism(L, n):
 
 
 def dominionToFnc(dominion):
-    return lambda weights: dominion[weights[1]][weights[2]]
+    return lambda weights: dominion[weights[0]][weights[1]]
         
 
 
 
 def alphaTextToFnc(alphaText):
     alphaDict=eval(alphaText)
-    return lambda node: alphaDict[node]
+    return lambda node: alphaDict[int(node)]
 
 
-n=3
-def getGAlpha(image1, image2, treeNum):
+
+
+def getGAlpha(treeNum):
     #Pick random dominion and homomorphism
     fileNameD="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(random.randint(0, 19))+".txt"
-    fileNameH="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(random.randint(0, 19))+".txt"
-    dominion=readDominion(fileNameD, n)      #check this is the correct n
+    fileNameH="Tree"+str(treeNum)+"\Homomorphisms\Tree"+str(treeNum)+"-Homomorphism"+str(random.randint(0, 19))+".txt"
+    dominionFile=open(fileNameD, "r")
     homomorphismFile=open(fileNameH, "r")
+    dominion=eval(dominionFile.read())
 
     
     dominionFnc=dominionToFnc(dominion)
     alphaFnc=alphaTextToFnc(homomorphismFile.read())
     
 
-    gAlpha=GAlpha(dominionFnc, alphaFnc)      #universe, arity, func: How do we reprsent the universe? arity=2; What do we list for func?
+    gAlpha=GAlpha(dominionFnc, alphaFnc)
 
 
     homomorphismFile.close()
+
+    return gAlpha
 
 
 
 # --------------------test and run functions------------------------------
 
 #Given a tree, generates a set number of dominions and stores them as text files. Note that a folder with the corresponding treeNum must already be set up
-def generateDominions(tree, treeNum, dominionNum):
+def generateDominions(tree, labels, treeNum, dominionNum):
 
     for i in range (0, dominionNum):
         fileName="Tree"+str(treeNum)+"\Dominions\Tree"+str(treeNum)+"-Dominion"+str(i)+".txt"
         dominionFile=open(fileName, "w")
 
-        dominionFile.write(str(random_dominion(3,labels, tree)))
+        dominionFile.write(str(random_dominion(28*28+1,labels, tree)))
 
         dominionFile.close()
 
 
-#Given a tree, generates a set number of homomorphsisms and stores them as text files. Note that a folder with the corresponding treeNum must already be set up
+#Given a tree, generates a set number of homomorphsisms and stores them as text files. Note that a folder with the corresponding treeNum must already be set up. n is the dimension of the images
 def generateHomomorphisms(tree, treeNum, homomNum, n):
 
     for i in range (0, homomNum):
@@ -366,8 +413,6 @@ def generateHomomorphisms(tree, treeNum, homomNum, n):
 
 
 
-
-getGAlpha(1,2,1)    #first 2 inputs should be images not ints
 
 
 
@@ -384,13 +429,13 @@ getGAlpha(1,2,1)    #first 2 inputs should be images not ints
 labels={1, 2, 3, 4, 5}
 L=random_tree(labels)
 print(L)
-treeNumber=1
+treeNumber=3
 L.makeTreeFile(treeNumber)
-print(readTree("Tree1\Tree1.txt"))
-generateDominions(L, 1, 20)
-L=readTree("Tree1\Tree1.txt")
+#print(readTree("Tree"+str(treeNumber)+"\Tree"+str(treeNumber)+".txt"))
+generateDominions(L, labels, treeNumber, 20)
+L=readTree("Tree"+str(treeNumber)+"\Tree"+str(treeNumber)+".txt")
 L.setRoot(1)
-generateHomomorphisms(L, 1, 20, 2)
+generateHomomorphisms(L, treeNumber, 20, 28)
 
 
 
@@ -423,12 +468,12 @@ print(tree.getNeighbors('test1'))
 #This chunk of code is to test applyDominion
 #runs dominion reader
 file=open(r"Dominions\Tree0-Dominion4.txt", "r")
-dominion=readDominion(file, 3)
+dominion=readDominion(file)
 
 #constructs two 3x3 images and runs psi_k
 image1=[[0, 0, 1],[0, 0, 0],[1, 0, 0]]
 image2=[[0, 0, 0],[0, 0, 0],[0, 1, 0]]
-weights=psiK(image1, image2, 3)
+weights=psiK(image1, image2)
 
 print(applyDominion(dominion, weights))         #row 2, column 1 (indexed from 0)
 
@@ -438,16 +483,7 @@ file.close()
 
 #Note: every 3x3 dominion with label set size 3 had at least one 3 in in - is this a feature of the program or just coincidence? - also random trees with three labels kept generating same tree
 
-#still to code:
-    #construct alpha from file
-    #alpha:
-        #store alpha as a file
-    #g_alpha
-        #code g_alpha
-        #store g_alpha
-
     #check out labels var in generateDominions - susbstituting tree.vertices would probably work
     #figure out a better way to get n as an input in _func
 
-#adjustments to code:
-    #dominions need to be large enough to work with any nxn image (eg for 3x3 images dominion should be 10x10)
+#Remember that dominions need to be large enough to work with any nxn image (eg for 3x3 images dominion should be 10x10)

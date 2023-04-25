@@ -2,6 +2,8 @@
 Check that MNIST training/test data is functioning
 """
 
+import sys
+sys.path.insert(0, r"C:\Users\2019r\vscode-workspace\395W\Tripods2021UA\src")
 import mnist_training_binary
 from mnist_training_binary import show
 
