@@ -5,6 +5,7 @@ import random
 
 from discrete_neural_net import Operation
 from itertools import product
+from dominion import getGAlpha
 
 
 def quarter_turn(x):
@@ -55,7 +56,8 @@ class ReflectionAutomorphism(Operation):
         Create a reflection automorphism.
         """
 
-        Operation.__init__(self, 1, lambda x: [[x[0][i][j] for j in range(len(x[0]) - 1, -1, -1)] for i in range(len(x[0]))],
+        Operation.__init__(self, 1,
+                           lambda x: [[x[0][i][j] for j in range(len(x[0]) - 1, -1, -1)] for i in range(len(x[0]))],
                            cache_values=False)
 
 
@@ -180,18 +182,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
                     endomorphisms_to_use[i] = BlankingEndomorphism(random.choice(constant_images))
                 if endomorphisms_to_use[i] == 'Swapping':
                     endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_images))
-            # def _test(x):
-            #     print(endomorphisms_to_use)
-            #     print(x)
-            #     print(op.arity)
-            #     print(endomorphisms_to_use[0])
-            #     print(endomorphisms_to_use[0][x])
-            #     index = [endomorphisms_to_use[j][x[j], ] for j in range(op.arity)]
-            #     print('Index: '+str(index))
-            #     print(endomorphisms_to_use[-1][op.func(index), ])
-            #     return endomorphisms_to_use[-1][op.func(index), ]
-            # neighbors.append(Operation(op.arity, _test, cache_values=False))
-            neighbors.append(Operation(op.arity, lambda x: endomorphisms_to_use[-1][op.func([endomorphisms_to_use[j][x[j], ] for j in range(op.arity)]), ], cache_values=False))
+            neighbors.append(Operation(op.arity, lambda x: endomorphisms_to_use[-1][
+                op.func([endomorphisms_to_use[j][x[j],] for j in range(op.arity)]),], cache_values=False))
         else:
             if op.arity == 1:
                 random_endomorphism = random.choice(endomorphisms)
@@ -200,7 +192,11 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
                 if random_endomorphism == 'Swapping':
                     random_endomorphism = SwappingAutomorphism(random.choice(constant_images))
                 neighbors.append(random_endomorphism)
-            if op.arity > 1:
+            if op.arity == 2 and random.randint(0, 1):
+                # I would just look at how many trees you have created and hardcode the following line as
+                # neighbors.append(getGAlpha(random.randint(0,number_of_trees_you_have-1)))
+                neighbors.append(getGAlpha(0))
+            else:
                 neighbors.append(IndicatorPolymorphism(random.choice(range(28)), random.choice(range(28)),
                                                        random.choices(constant_images, k=op.arity)))
     return neighbors
