@@ -166,6 +166,7 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
     Returns:
 
     """
+    
 
     endomorphisms = []
     endomorphisms += [RotationAutomorphism(k) for k in range(4)]
@@ -195,7 +196,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
             if op.arity == 2 and random.randint(0, 1):
                 # I would just look at how many trees you have created and hardcode the following line as
                 # neighbors.append(getGAlpha(random.randint(0,number_of_trees_you_have-1)))
-                neighbors.append(getGAlpha(0))
+                # I changed this to 3 for now because currently tree 3 is the only one with the correct size of dominions
+                neighbors.append(getGAlpha(3))
             else:
                 neighbors.append(IndicatorPolymorphism(random.choice(range(28)), random.choice(range(28)),
                                                        random.choices(constant_images, k=op.arity)))

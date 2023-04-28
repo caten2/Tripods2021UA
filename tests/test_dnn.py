@@ -2,6 +2,9 @@
 Discrete neural net test
 """
 
+
+import sys
+sys.path.insert(0, r"C:\Users\2019r\vscode-workspace\395W\Tripods2021UA\src")
 from discrete_neural_net import Neuron, Layer, NeuralNet
 import operations
 from itertools import product

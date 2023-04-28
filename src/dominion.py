@@ -74,8 +74,9 @@ class Graph:
 class GAlpha(Operation):
 
     def __init__(self, dominion, alpha):
-        def _func(image1, image2):
-            weights=psiK(image1, image2)
+        def _func(images):
+            #images should be a tuple of images
+            weights=psiK(images[0], images[1])
             temp=dominion(weights)
             return alpha(temp)
 
@@ -90,6 +91,7 @@ class GAlpha(Operation):
         Argument:
             index (tuple): The tuple of inputs to plug in to the Operation.
         """
+        #print(index)    #delete
 
         if self.cache_values:
             if self.arity == 0:
@@ -101,27 +103,9 @@ class GAlpha(Operation):
                     #error is definitely with index as input to self.values - currently index is a tuple but the elements of the tuple are images, which are lists of lists, which are unhashable and thus can't be keys in dictionaries
                     self.values[tuple(index)] = self.func(index[0],index[1])
             return self.values[tuple(index)]
-        return self.func(index[0],index[1])
+        return self.func([index[0],index[1]])
 
 
-
-"""
-def __getitem__(self, index):
-        
-        Compute the value of the Operation on given inputs.
-        Argument:
-            index (tuple): The tuple of inputs to plug in to the Operation.
-        
-
-        if self.cache_values:
-            if self.arity == 0:
-                if not self.values:
-                    self.values = self.func(index)
-            if self.arity > 0:
-                if index not in self.values.keys():
-                    self.values[index] = self.func(index)
-            return self.values[index]
-        return self.func(index)"""
 
 
     
@@ -205,9 +189,8 @@ def random_dominion(size, set_of_labels, constraint_graph=None):
     else:
         partial_dominion = [[random.choice(tuple(set_of_labels))]]
         for _ in range(1, size):
-            # print("reached getNeighbor case")#delete
             partial_dominion[0].append(
-                random.choice(constraint_graph.getNeighbors(partial_dominion[0][-1])))  # test getNeighbors
+                random.choice(constraint_graph.getNeighbors(partial_dominion[0][-1])))
     for _ in range(size - 1):
         partial_dominion.append(new_row(partial_dominion[-1], set_of_labels, constraint_graph))
     return partial_dominion
@@ -224,7 +207,7 @@ def draw_dominion(dominion, colmap, name):
 
     plt.imsave('{}.png'.format(name), np.array(dominion), cmap=eval('cm.{}'.format(colmap)))
 
-
+"""
 # reads a dominion that's been stored as a file and returns a dominon as an np array
 #I think this might hard code a 3x3 dominion
 def readDominion(fileName):
@@ -241,6 +224,7 @@ def readDominion(fileName):
     file.close()
 
     return dominion
+    """
 
 
 def readTree(fileName):
@@ -303,20 +287,18 @@ def drawImage(dim):
 
 # returns a random image that's adjacent to the input image in the Hamming graph (could return original image) by switching the value of at most 1 pixel
 def randomAdjacent(image):
-    # print(image)    #delete
     n = image.shape[1]
     digit = random.randint(0, n * n)
-    print(digit)  # delete
+    #print(digit)  # delete
     if digit == n * n:
         return image
     else:
         # convert digit to pixel position:
         x1 = math.floor(digit / n)
         x2 = digit % n
-        # print(str(x1)+", "+str(x2))    #delete
         newImage = copy.deepcopy(image)
         newImage[x1][x2] = abs(image[x1][x2] - 1)
-        print(newImage)  # delete
+        #print(newImage)  # delete
         return newImage
 
 
@@ -341,8 +323,8 @@ def getHelper(L, root, neighbors, alpha):
 def getHomomorphism(L, n):
     r = L.root
     alpha = {int(r): drawImage(n)}
-    print(alpha.get(int(r)))  # delete
-    print(alpha)  # delete
+    #print(alpha.get(int(r)))  # delete
+    #print(alpha)  # delete
     return getHelper(L, r, L.getNeighbors(r), alpha)
 
 
@@ -408,11 +390,6 @@ def generateHomomorphisms(tree, treeNum, homomNum, n):
         homomFile.write(str(getHomomorphism(tree, n)))
 
         homomFile.close()
-
-
-
-
-
 
 
 
