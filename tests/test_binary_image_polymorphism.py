@@ -2,8 +2,12 @@
 Tests for binary image polymorphisms
 """
 # test for pull request !
+
+from pathlib import Path
+
+path = Path(__file__).parent.parent.absolute() / "src"
 import sys
-sys.path.insert(0, r"C:\Users\2019r\vscode-workspace\395W\Tripods2021UA\src")
+sys.path.insert(0, path)
 from binary_image_polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism,\
     BlankingEndomorphism, IndicatorPolymorphism
 from mnist_training_binary import binary_train_for_zero, show
