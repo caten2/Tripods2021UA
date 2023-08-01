@@ -11,8 +11,22 @@ class RandomOperation(Operation):
 
     """
 
+    """
+    Generate a random operation.
+    
+    Arguments:
+        order (int): Determines the universe of the operation [0, order - 1].
+        arity (int): The arity of the random operation.
+        
+    Returns:
+        (Operation): A random operation of arity 'arity' on the universe [0, order - 1].
+    """
     def __init__(self, order, arity):
-        Operation.__init__(self, arity, lambda x: random.randint(0, order - 1))
+        if arity == 0:
+            random_constant = random.randint(0, order - 1)
+            Operation.__init__(self, 0, random_constant)
+        else:
+            Operation.__init__(self, arity, lambda *x: random.randint(0, order - 1))
 
 
 class ModularAddition(Operation):
@@ -21,7 +35,7 @@ class ModularAddition(Operation):
     """
 
     def __init__(self, order, cache_values=False):
-        Operation.__init__(self, 2, lambda x: (x[0] + x[1]) % order, cache_values)
+        Operation.__init__(self, 2, lambda *x: (x[0] + x[1]) % order, cache_values)
 
 
 class ModularMultiplication(Operation):
@@ -30,7 +44,7 @@ class ModularMultiplication(Operation):
     """
 
     def __init__(self, order, cache_values=False):
-        Operation.__init__(self, 2, lambda x: (x[0] * x[1]) % order, cache_values)
+        Operation.__init__(self, 2, lambda *x: (x[0] * x[1]) % order, cache_values)
 
 
 class ModularNegation(Operation):
@@ -39,7 +53,7 @@ class ModularNegation(Operation):
     """
 
     def __init__(self, order, cache_values=False):
-        Operation.__init__(self, 1, lambda x: (-x) % order, cache_values)
+        Operation.__init__(self, 1, lambda *x: (-x) % order, cache_values)
 
 
 class Constant(Operation):
@@ -49,7 +63,7 @@ class Constant(Operation):
     """
 
     def __init__(self, constant, order, arity=0, cache_values=False):
-        Operation.__init__(self, arity, lambda x: constant, cache_values)
+        Operation.__init__(self, arity, lambda *x: constant, cache_values)
 
 
 class Identity(Operation):
@@ -58,4 +72,4 @@ class Identity(Operation):
     """
 
     def __init__(self):
-        Operation.__init__(self, 1, lambda x: x[0], cache_values=False)
+        Operation.__init__(self, 1, lambda *x: x[0], cache_values=False)
