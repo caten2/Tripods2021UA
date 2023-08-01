@@ -4,10 +4,13 @@ Modified MNIST training set for binary image classification
 Based on the MNIST training set found at http://yann.lecun.com/exdb/mnist/
 """
 
-from tensorflow import keras
-
+import numpy as np
 # Load the training and test data from keras.
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+data = np.load('src/data/mnistAttempt.npz')
+x_train = data['x_train']
+y_train = data['y_train']
+x_test = data['x_test']
+y_test = data['y_test']
 
 
 def grayscale_to_binary(image, cutoff=127):

@@ -3,6 +3,7 @@ Dominion example/test
 """
 
 from dominion import *
+import time
 
 def main():
     # Create a random row of length 12 whose entries are 0, 1, or 2.
