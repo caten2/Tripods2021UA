@@ -18,23 +18,23 @@ img = training_pairs[24][0]['x']
 show(img)
 # Display the rotated image.
 print('Rotated image')
-show(rot[img, ])
+show(rot(img, ))
 # We can rotate by any number of quarter turns.
 print('Rotated half a turn')
 rot2 = RotationAutomorphism(2)
-show(rot2[img, ])
+show(rot2(img, ))
 print('Rotated three quarter turns')
 rot3 = RotationAutomorphism(3)
-show(rot3[img, ])
+show(rot3(img, ))
 
 # Create a reflection automorphism.
 refl = ReflectionAutomorphism()
 # Reflect our test image.
 print('Reflected image')
-show(refl[img, ])
+show(refl(img, ))
 # We can compose rotations and reflections.
 print('Rotated and reflected image')
-show(rot[refl[img, ], ])
+show(rot(refl(img, ), ))
 
 # Create a swapping automorphism.
 swap = SwappingAutomorphism(training_pairs[37][0]['x'])
@@ -43,7 +43,7 @@ print('Image to use for swap')
 show(training_pairs[37][0]['x'])
 # Swap an image.
 print('Swapped image')
-show(swap[img, ])
+show(swap(img, ))
 
 # Create a blanking endomorphism.
 blank = BlankingEndomorphism(training_pairs[37][0]['x'])
@@ -52,7 +52,7 @@ print('Image to use for blanking')
 show(training_pairs[37][0]['x'])
 # Swap an image.
 print('Blanked image')
-show(blank[img, ])
+show(blank(img, ))
 
 # Create a binary indicator polymorphism.
 ind_pol = IndicatorPolymorphism(0, 0, [training_pairs[2][0]['x'], training_pairs[51][0]['x']])
@@ -70,10 +70,10 @@ print('Second input image')
 show(img2)
 # Apply the polymorphism.
 print('Image obtained from polymorphism')
-show(ind_pol[img1, img2])
+show(ind_pol(img1, img2))
 # Change one of the inputs and check the new output.
 print('New first input')
 img3 = training_pairs[34][0]['x']
 show(img3)
 print('New image obtained from polymorphism')
-show(ind_pol[img3, img2])
+show(ind_pol(img3, img2))
