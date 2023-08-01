@@ -121,7 +121,7 @@ def indicator_polymorphism(i, j, a, c):
     Args:
         i (int): The row where the single black pixel appears.
         j (int): The column where the single black pixel appears.
-        a (iterable of (list of (list of int))):
+        a (iterable of (list of (list of int))): A sequence of binary images with which dot products are to be taken.
         c (iterable of (list of (list of int))): A sequence of binary images with which dot products are to be taken.
 
     Returns:
