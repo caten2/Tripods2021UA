@@ -13,7 +13,8 @@ class Operation:
     Attributes:
         arity (int): The number of arguments the operation takes. This quantity should be at least 0. A 0-ary
             Operation takes empty tuples as arguments. See the method __getitem__ below for more information on this.
-        func (function): The function which is used to compute the output value of the Operation when applied to some
+        func (function or constant): The function which is used to compute the output
+        value of the Operation when applied to some
             inputs.
         cache_values (bool): Whether to store already-computed values of the Operation in memory.
         values (dict): If `cache_values` is True then this attribute will keep track of which input-output pairs have
@@ -30,7 +31,7 @@ class Operation:
                 Operation takes empty tuples as arguments. See the method __getitem__ below for more information on
                 this.
             func (function): The function which is used to compute the output value of the Operation when applied to
-                some inputs.
+                some inputs. If the arity is 0, pass a constant, not a function, here.
             cache_values (bool): Whether to store already-computed values of the Operation in memory.
         """
 
@@ -40,23 +41,20 @@ class Operation:
         if self.cache_values:
             self.values = {}
 
-    def __getitem__(self, index):
+    def __call__(self, *index):
         """
         Compute the value of the Operation on given inputs.
 
         Argument:
             index (tuple): The tuple of inputs to plug in to the Operation.
         """
-
+        if self.arity == 0:
+            return self.func
         if self.cache_values:
-            if self.arity == 0:
-                if not self.values:
-                    self.values = self.func(index)
-            if self.arity > 0:
-                if index not in self.values.keys():
-                    self.values[index] = self.func(index)
+            if index not in self.values.keys():
+                self.values[index] = self.func(*index)
             return self.values[index]
-        return self.func(index)
+        return self.func(*index)
 
 
 class Neuron:
@@ -157,7 +155,7 @@ class NeuralNet:
         for layer in self.architecture[1:]:
             for neuron in layer.neurons:
                 index = tuple(current_vals[input_neuron] for input_neuron in neuron.inputs)
-                current_vals[neuron] = neuron.activation_func[index]
+                current_vals[neuron] = neuron.activation_func(*index)
         return tuple(current_vals[neuron] for neuron in self.architecture[-1].neurons)
 
     def empirical_loss(self, training_pairs, loss_func=zero_one_loss):
