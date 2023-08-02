@@ -51,7 +51,7 @@ def quarter_turn(x):
             a relation.
     """
 
-    return [(x.n - (x.rList[k][1]+1), x.rList[k][0]) for k in range(len(x.rList))]
+    return Relation([(x.n - (x.rList[k][1]+1), x.rList[k][0]) for k in range(len(x.rList))], False, x.n, x.arity)
 
 
 
@@ -111,8 +111,8 @@ def indicator_polymorphism(i, j, a, c):
     """
 
     if all(dot_product(a[k], c[k]) for k in range(len(a))):
-        return [(i, j)]
-    return []
+        return Relation([(i, j)], False, a[0].n, 2)
+    return Relation([], False, a[0].n, 2)
 
 
 
@@ -163,7 +163,7 @@ def reflectionVertical(x):
         Relation: The same image reflected across its vertical axis of symmetry, represented by
             a relation.
     """
-    return [(i, int((x.n - j -1)%x.n)) for (i, j) in x.rList]
+    return Relation([(i, int((x.n - j -1)%x.n)) for (i, j) in x.rList], False, x.n, x.arity)
 
 
 
@@ -195,7 +195,8 @@ def swapping(x, y):
     
     """
 
-    return [(i, j) for (i, j) in x.rList if (i, j) not in y.rList] + [(i, j) for (i, j) in y.rList if (i, j) not in x.rList]
+    return Relation([(i, j) for (i, j) in x.rList if (i, j) not in y.rList] + [(i, j) for (i, j) in y.rList if (i, j) not in x.rList],
+                     x.n, x.arity)
 
 
 
@@ -232,7 +233,7 @@ def blanking(x, y):
     
     """
 
-    return [(i, j) for (i, j) in x.rList if (i, j) in y.rList]
+    return Relation([(i, j) for (i, j) in x.rList if (i, j) in y.rList], False, x.n, x.arity)
 
 
 
