@@ -7,7 +7,7 @@ O = Origin
 R = Rotation
 Int = Angle
 """
-
+"""
 class Relation:
 
     def cleanData(self, graphOrList):
@@ -15,17 +15,17 @@ class Relation:
         return []
 
     def __init__(self, graphOrList, isGraph, n, arity=2):
-        """
-        Parameters: graphOrList, List<(int, int)> or List<List><int> & isGraph, boolean,  arity, int default 2
-        Attributes: rList, List<(int, int)>
-        """
+        
+        #Parameters: graphOrList, List<(int, int)> or List<List><int> & isGraph, boolean,  arity, int default 2
+        #Attributes: rList, List<(int, int)>
+        
 
         if isGraph:
             self.rList = [(x, y) for x in range(len(graphOrList[0])) for y in range(len(graphOrList[0])) if graphOrList[x][y] == 1]
         else:
             self.rList = graphOrList
         self.n = n
-
+"""
 
 
 def TOR90TOPermutation(n, coords):
