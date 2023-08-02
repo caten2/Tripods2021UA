@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from test import Relation
 # Key:
 """
 T = Translation

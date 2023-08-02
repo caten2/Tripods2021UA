@@ -7,6 +7,16 @@ sys.path.insert(0, path)
 from discrete_neural_net import Operation
 from itertools import product
 import random
+import numpy as np
+
+
+# Note that we have added a hyperoctohedral polymorphism, but have kept in the equivalent
+# 2-cube polymorphisms (rotation, reflection). If the hyperoctohedral polymorphism works,
+# we can delete the rotation and reflection polymorphisms, but we didn't want to delete 
+# something that works.
+
+# Also, if ^ works, we would need to put it into the neighbor function (and remove rotation
+# and reflection endomorphisms from the function)
 
 class Relation:
 
@@ -21,13 +31,13 @@ class Relation:
                 change the format of the binary image to a list of tuples of integers, in the way that
                 a relatio is typically defined. If the input is a list of tuples of integers, isGraph is
                 False, as we do not need to change the input's format.
-            n (int): the length of the binary image to be represented as a relation.
+            n (int): the length of the n-ary image to be represented as a relation.
             arity (int = 2): the number of elements within one tuple of the relation. This should be at
                 least 0, which would be the empty relation.
 
         Attributes: 
             rList (list of (tuple of(int))): the relation represented as a list of tuples of integers.
-            n (int): the length of the binary image to be represented as a relation.
+            n (int): the length of the n-ary image to be represented as a relation.
         """
 
         if isGraph:
@@ -36,7 +46,52 @@ class Relation:
             self.rList = graphOrList
         
         self.n = n
+        self.arity = arity
 
+
+
+def randomPermutationMatrix(n):
+    #n: integer
+    columnSelection = [i for i in range(n)]
+    permutationMatrix = np.zeros((n,n))
+    trueOrFalse = [True, False]
+    for i in range(n):
+        IndexSelection = random.choice(columnSelection)
+        columnSelection.remove(IndexSelection)
+        ParitySelection = random.choice(trueOrFalse)
+        permutationMatrix[i, IndexSelection] = 1 if ParitySelection else -1
+    return permutationMatrix
+
+def applyRandomPermutation(n, coords):
+    # n: length of side
+    # coords: tuple of relation
+    dim = len(coords)
+    randomPermutation = randomPermutationMatrix(dim)
+    column_vector = np.array([l for l in coords])
+    translationVector = np.array([(n-1)/2 for l in range(dim)])
+    result = [tuple(np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector))]
+    return Relation(result, False, n, dim)
+    """
+    return({
+        "result": np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector),
+        "permutationMatrix": randomPermutation
+    })
+    """
+
+
+class HyperoctohedralAutomorphism(Operation):
+    """
+    An automorphism of the Hamming graph obtained by applying a random permutation of the hyperoctohedral group.
+    """
+
+    def __init__(self):
+        """
+        Create a hyperoctohedral automorphism.
+
+        """
+        
+
+        Operation.__init__(self, 1, lambda x: applyRandomPermutation(x[0].n, x[0].rList), cache_values=False)
 
 
 def quarter_turn(x):
@@ -71,85 +126,84 @@ class RotationAutomorphism(Operation):
         if k % 4 == 0:
             func = lambda x: x[0] # apply new operaiton
         if k % 4 == 1:
-            func = lambda x: quarter_turn(x[0])
+            func = lambda x: quarter_turn(x[0].rList)
         if k % 4 == 2:
-            func = lambda x: quarter_turn(quarter_turn(x[0]))
+            func = lambda x: quarter_turn(quarter_turn(x[0].rList))
         if k % 4 == 3:
-            func = lambda x: quarter_turn(quarter_turn(quarter_turn(x[0])))
+            func = lambda x: quarter_turn(quarter_turn(quarter_turn(x[0].rList)))
         Operation.__init__(self, 1, func=func, cache_values=False)
 
 
 
 def dot_product(x, y):
     """
-    Take the dot product of two binary images over the finite field of order 2.
+    Take the dot product of two n-nary images over the finite field of order 2.
 
     Arguments:
-        x (Relation): The first binary image.
-        y (Relation): The second binary image.
+        x (Relation): The first n-nary image.
+        y (Relation): The second n-nary image.
     Returns:
         int: The dot product of the given images.
     """
 
-    return len([(i, j) for (i, j) in x.rList if (i, j) in y.rList]) % 2
+    return len([tup for tup in x.rList if tup in y.rList]) % 2
 
 
 
-def indicator_polymorphism(i, j, a, c):
+
+def indicator_polymorphism(tup, a, c):
     """
-    Perform an indicator polymorphism where the either blank (all zeroes) or the binary image with a
-    single black pixel at position (`i`,`j`).
+    Perform an indicator polymorphism where the either blank (all zeroes) or the n-ary image with a
+    single black pixel at position of the given tuple.
 
     Args:
-        i (int): The row where the single black pixel appears.
-        j (int): The column where the single black pixel appears.
-        a (iterable of Relation): A sequence of binary images with which dot products are to be taken.
-        c (iterable of Relation): A sequence of binary images with which dot products are to be taken.
+        tup (tuple): the location of the single black pixel
+        a (iterable of Relation): A sequence of n-nary images with which dot products are to be taken.
+        c (iterable of Relation): A sequence of n-nary images with which dot products are to be taken.
 
     Returns:
-        Relation: The binary image obtained by applying the indicator polymorphism.
+        Relation: The n-ary image obtained by applying the indicator polymorphism.
     """
 
     if all(dot_product(a[k], c[k]) for k in range(len(a))):
-        return Relation([(i, j)], False, a[0].n, 2)
-    return Relation([], False, a[0].n, 2)
+        return Relation([tup], False, a[0].n, a[0].arity)
+    return Relation([], False, a[0].n, a[0].arity)
 
 
 
 class IndicatorPolymorphism(Operation):
     """
-    Create a polymorphism of the Hamming graph by taking dot products with fixed binary images.
+    Create a polymorphism of the Hamming graph by taking dot products with fixed n-ary images.
     """
 
-    def __init__(self, i, j, c):
+    def __init__(self, tup, c):
         """
-        Create an indicator polymorphism where the output image is either blank (all zeroes) or the binary image with a
-        single black pixel at position (`i`,`j`).
+        Create an indicator polymorphism where the output image is either blank (all zeroes) or the n-ary image with a
+        single black pixel at position given by the tuple.
 
         Args:
-            i (int): The row where the single black pixel appears.
-            j (int): The column where the single black pixel appears.
-            c (iterable of Relation): A sequence of binary images with which dot products are to be
+            tup (tuple): the location of the single black pixel
+            c (iterable of Relation): A sequence of n-ary images with which dot products are to be
                 taken.
         """
 
-        Operation.__init__(self, len(c), lambda a: indicator_polymorphism(i, j, a, c), cache_values=False)
+        Operation.__init__(self, len(c), lambda a: indicator_polymorphism(tup, a[0], c), cache_values=False)
 
 
 
 def hamming_distance(x, y):
     """
-    Compute the Hamming distance between a pair of binary images.
+    Compute the Hamming distance between a pair of n-ary images.
 
     Args:
-        x (Relation): the first binary image
-        y (Relation): the second binary image
+        x (Relation): the first n-ary image
+        y (Relation): the second n-ary image
 
     Returns:
         int: the Hamming distance between x and y, ie the number of pixels at which they differ.
 
     """
-    return len([(i, j) for (i, j) in x.rList if (i, j) not in y.rList]) + len([(i, j) for (i, j) in y.rList if (i, j) not in x.rList])
+    return len([tup for tup in x.rList if tup not in y.rList]) + len([tup for tup in y.rList if tup not in x.rList])
 
 
 def reflectionVertical(x):
@@ -179,23 +233,23 @@ class ReflectionAutomorphism(Operation):
         """
         
 
-        Operation.__init__(self, 1, lambda x: reflectionVertical(x[0]), cache_values=False)
+        Operation.__init__(self, 1, lambda x: reflectionVertical(x[0].rList), cache_values=False)
 
 
 def swapping(x, y):
     """
-    Taking the component-wise sum of two binary images.
+    Taking the component-wise sum of two n-ary images.
 
     Args:
-        x (Relation): The first binary image to be added
-        y (Relation): The second binary image to be added
+        x (Relation): The first n-ary image to be added
+        y (Relation): The second n-ary image to be added
 
     Returns:
         Relation: The image with entries of componentwise sums of x and y
     
     """
 
-    return Relation([(i, j) for (i, j) in x.rList if (i, j) not in y.rList] + [(i, j) for (i, j) in y.rList if (i, j) not in x.rList],
+    return Relation([tup for tup in x.rList if tup not in y.rList] + [tup for tup in y.rList if tup not in x.rList],
                      x.n, x.arity)
 
 
@@ -203,7 +257,7 @@ def swapping(x, y):
 
 class SwappingAutomorphism(Operation): 
     """
-    An automorphism of the Hamming graph obtained by taking the componentwise sum with a fixed binary image.
+    An automorphism of the Hamming graph obtained by taking the componentwise sum with a fixed n-ary image.
     """
 
     def __init__(self, b):
@@ -211,36 +265,36 @@ class SwappingAutomorphism(Operation):
         Create a swapping automorphism for a given image.
 
         Argument:
-            b (Relation): The fixed binary image used for swapping pixels, represented as a relation
+            b (Relation): The fixed n-ary image used for swapping pixels, represented as a relation
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a, b),
+        Operation.__init__(self, 1, lambda a: swapping(a[0].rList, b.rList),
                            cache_values=False)
 
 
 
 def blanking(x, y):
     """
-    Taking the Hadamard product (component-wise multiplication) of two binary images.
+    Taking the Hadamard product (component-wise multiplication) of two n-ary images.
 
     Args:
-        x (Relation): The first binary image in the Hadamard product
-        y (Relation): The second binary image in the Hadamard product
+        x (Relation): The first n-ary image in the Hadamard product
+        y (Relation): The second n-ary image in the Hadamard product
 
     Returns:
         Relation: The image of Hadamard product of x and y
     
     """
 
-    return Relation([(i, j) for (i, j) in x.rList if (i, j) in y.rList], False, x.n, x.arity)
+    return Relation([tup for tup in x.rList if tup in y.rList], False, x.n, x.arity)
 
 
 
 
 class BlankingEndomorphism(Operation):
     """
-    An endomorphism of the Hamming graph obtained by taking the Hadamard product with a fixed binary image.
+    An endomorphism of the Hamming graph obtained by taking the Hadamard product with a fixed n-ary image.
     """
 
     def __init__(self, b):
@@ -248,11 +302,11 @@ class BlankingEndomorphism(Operation):
         Create a blanking endomorphism for a given image.
 
         Argument:
-            b (Relation): The fixed binary image used for swapping pixels, represented by relation.
+            b (Relation): The fixed n-ary image used for swapping pixels, represented by relation.
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a, b), cache_values=False)
+        Operation.__init__(self, 1, lambda a: swapping(a[0].rList, b.rList), cache_values=False)
 
 
 
@@ -261,9 +315,9 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
     """
 
     Arguments:
-        op (Operation): A binary image polymorphism operation.
+        op (Operation): A n-ary image polymorphism operation.
         num_of_neighbors (int): The amount of possible neighbors to generate.
-        constant_images (list of Relation): A list of binary images (as relations) to use as constants.
+        constant_images (list of Relation): A list of n-ary images (as relations) to use as constants.
 
     Returns:
 
@@ -333,9 +387,11 @@ a2 = Relation(graph2, True, 6)
 
 print(quarter_turn(a))
 print(dot_product(a, a2))
-print(indicator_polymorphism(1, 1, [a, a2], [a, a2]))
+print(indicator_polymorphism((1, 1), [a, a2], [a, a2]))
 print(hamming_distance(a, a2))
 print(reflectionVertical(a))
 print(swapping(a, a2))
 print(blanking(a, a2))
 
+newRelation = applyRandomPermutation(3, (2, 1, 0))
+print(newRelation.rList, newRelation.n)
