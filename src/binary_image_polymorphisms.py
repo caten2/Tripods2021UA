@@ -43,7 +43,7 @@ class RotationAutomorphism(Operation):
             func = lambda *x: quarter_turn(quarter_turn(x[0]))
         if k % 4 == 3:
             func = lambda *x: quarter_turn(quarter_turn(quarter_turn(x[0])))
-        Operation.__init__(self, 1, func=func, cache_values=False)
+        Operation.__init__(self, 1, func=func)
 
 
 class ReflectionAutomorphism(Operation):
@@ -58,8 +58,7 @@ class ReflectionAutomorphism(Operation):
 
         Operation.__init__(self, 1,
                            lambda *x: [[x[0][i][j] for j in range(len(x[0]) - 1, -1,
-                                                                  -1)] for i in range(len(x[0]))],
-                           cache_values=False)
+                                                                  -1)] for i in range(len(x[0]))])
 
 
 class SwappingAutomorphism(Operation):
@@ -77,8 +76,7 @@ class SwappingAutomorphism(Operation):
 
         size = len(b)
         Operation.__init__(self, 1, lambda *a: [[(a[0][i][j] + b[i][j]) % 2 for j in
-                                                 range(size)] for i in range(size)],
-                           cache_values=False)
+                                                 range(size)] for i in range(size)])
 
 
 class BlankingEndomorphism(Operation):
@@ -96,8 +94,7 @@ class BlankingEndomorphism(Operation):
 
         size = len(b)
         Operation.__init__(self, 1, lambda *a: [[a[0][i][j] * b[i][j] for j in range(
-            size)] for i in range(size)],
-                           cache_values=False)
+            size)] for i in range(size)])
 
 
 def dot_product(x, y):
@@ -155,8 +152,7 @@ class IndicatorPolymorphism(Operation):
                 taken.
         """
 
-        Operation.__init__(self, len(c), lambda *a: indicator_polymorphism(i, j, a, c),
-                           cache_values=False)
+        Operation.__init__(self, len(c), lambda *a: indicator_polymorphism(i, j, a, c))
 
 
 def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
@@ -170,7 +166,6 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
     Returns:
 
     """
-    
 
     endomorphisms = []
     endomorphisms += [RotationAutomorphism(k) for k in range(4)]
@@ -188,8 +183,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
                 if endomorphisms_to_use[i] == 'Swapping':
                     endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_images))
             neighbors.append(Operation(op.arity, lambda *x: endomorphisms_to_use[-1](
-                op.func([endomorphisms_to_use[j](x[j],) for j in range(op.arity)]),),
-            cache_values=False))
+                op.func([endomorphisms_to_use[j](x[j], ) for j in range(op.arity)]), ),
+                                       cache_values=False))
         else:
             if op.arity == 1:
                 random_endomorphism = random.choice(endomorphisms)
@@ -200,8 +195,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
                 neighbors.append(random_endomorphism)
             if op.arity == 2 and random.randint(0, 1):
                 # I would just look at how many trees you have created and hardcode the following line as
-                # neighbors.append(getGAlpha(random.randint(0,number_of_trees_you_have-1)))
-                # I changed this to 3 for now because currently tree 3 is the only one with the correct size of dominions
+                # neighbors.append(getGAlpha(random.randint(0,number_of_trees_you_have-1))) I changed this to 3 for
+                # now because currently tree 3 is the only one with the correct size of dominions
                 neighbors.append(getGAlpha(3))
             else:
                 neighbors.append(IndicatorPolymorphism(random.choice(range(28)), random.choice(range(28)),
