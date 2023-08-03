@@ -1,6 +1,12 @@
 """
 Check that MNIST training/test data is functioning
 """
+from pathlib import Path
+
+path = str(Path(__file__).parent.parent.absolute() / "src")
+import sys
+myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
+sys.path.insert(0, path)
 
 import mnist_training_binary
 from mnist_training_binary import show

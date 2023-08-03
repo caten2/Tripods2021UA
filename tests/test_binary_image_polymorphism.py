@@ -5,9 +5,10 @@ Tests for binary image polymorphisms
 
 from pathlib import Path
 
-path = Path(__file__).parent.parent.absolute() / "src"
+path = str(Path(__file__).parent.parent.absolute() / "src")
 import sys
 sys.path.insert(0, path)
+
 from binary_image_polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism,\
     BlankingEndomorphism, IndicatorPolymorphism
 from mnist_training_binary import binary_train_for_zero, show
@@ -20,6 +21,7 @@ rot = RotationAutomorphism()
 # Choose an image to rotate.
 print('Original image')
 img = training_pairs[24][0]['x']
+print(type(img))
 # Display the original.
 show(img)
 # Display the rotated image.
