@@ -7,7 +7,6 @@ from pathlib import Path
 
 path = str(Path(__file__).parent.parent.absolute() / "src")
 import sys
-myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
 sys.path.insert(0, path)
 
 from binary_image_polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism,\
@@ -22,6 +21,7 @@ rot = RotationAutomorphism()
 # Choose an image to rotate.
 print('Original image')
 img = training_pairs[24][0]['x']
+print(type(img))
 # Display the original.
 show(img)
 # Display the rotated image.

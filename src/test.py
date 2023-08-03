@@ -64,6 +64,9 @@ def randomPermutationMatrix(n):
     return permutationMatrix
 
 def applyRandomPermutation(n, coords):
+    print(n, coords)
+    print(type(coords[0]))
+    print(len(coords))
     # n: length of side
     # coords: tuple of relation
     dim = len(coords)
@@ -91,8 +94,7 @@ class HyperoctohedralAutomorphism(Operation):
 
         """
         
-
-        Operation.__init__(self, 1, lambda x: applyRandomPermutation(x[0].n, x[0].rList), cache_values=False)
+        Operation.__init__(self, 1, lambda x: applyRandomPermutation(x.n, x.rList), cache_values=False)
 
 
 def quarter_turn(x):
