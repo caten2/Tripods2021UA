@@ -43,7 +43,7 @@ class RotationAutomorphism(Operation):
             func = lambda *x: quarter_turn(quarter_turn(x[0]))
         if k % 4 == 3:
             func = lambda *x: quarter_turn(quarter_turn(quarter_turn(x[0])))
-        Operation.__init__(self, 1, func=func)
+        Operation.__init__(self, 1, func=func, cache_values=False)
 
 
 class ReflectionAutomorphism(Operation):
@@ -58,7 +58,7 @@ class ReflectionAutomorphism(Operation):
 
         Operation.__init__(self, 1,
                            lambda *x: [[x[0][i][j] for j in range(len(x[0]) - 1, -1,
-                                                                  -1)] for i in range(len(x[0]))])
+                                                                  -1)] for i in range(len(x[0]))], cache_values=False)
 
 
 class SwappingAutomorphism(Operation):
@@ -76,7 +76,7 @@ class SwappingAutomorphism(Operation):
 
         size = len(b)
         Operation.__init__(self, 1, lambda *a: [[(a[0][i][j] + b[i][j]) % 2 for j in
-                                                 range(size)] for i in range(size)])
+                                                 range(size)] for i in range(size)], cache_values=False)
 
 
 class BlankingEndomorphism(Operation):
@@ -94,7 +94,7 @@ class BlankingEndomorphism(Operation):
 
         size = len(b)
         Operation.__init__(self, 1, lambda *a: [[a[0][i][j] * b[i][j] for j in range(
-            size)] for i in range(size)])
+            size)] for i in range(size)], cache_values=False)
 
 
 def dot_product(x, y):
@@ -152,7 +152,7 @@ class IndicatorPolymorphism(Operation):
                 taken.
         """
 
-        Operation.__init__(self, len(c), lambda *a: indicator_polymorphism(i, j, a, c))
+        Operation.__init__(self, len(c), lambda *a: indicator_polymorphism(i, j, a, c), cache_values=False)
 
 
 def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):

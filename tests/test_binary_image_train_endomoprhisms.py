@@ -1,6 +1,12 @@
 """
 Train a discrete neural net using only endomorphisms
 """
+from pathlib import Path
+
+path = str(Path(__file__).parent.parent.absolute() / "src")
+import sys
+myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
+sys.path.insert(0, path)
 
 from discrete_neural_net import Neuron, Layer, NeuralNet
 from binary_image_polymorphisms import RotationAutomorphism, polymorphism_neighbor_func, hamming_distance
