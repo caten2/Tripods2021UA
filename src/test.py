@@ -64,19 +64,20 @@ def randomPermutationMatrix(n):
     return permutationMatrix
 
 def applyRandomPermutation(n, coords):
-    print(n, coords)
-    print(coords)
-    print(len(coords))
+    
     # n: length of side
-    # coords: tuple of relation
-    dim = len(coords)
+    # coords: array of tuples
+    dim = len(coords[0])
     randomPermutation = randomPermutationMatrix(dim)
-    column_vector = np.array([l for l in coords])
-    translationVector = np.array([[(n-1)/2] for l in range(dim)])
-    print(column_vector)
-    print(translationVector)
-    result = [tuple(np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector))]
-    return Relation(result, False, n, dim)
+    print("ur mom", randomPermutation)
+    newRelationRList = []
+    for coordinate in coords:
+        column_vector = np.array([[l] for l in coordinate])
+        translationVector = np.array([[(n-1)/2] for l in range(dim)])
+        result = np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector)
+        result_tuple = tuple(result.flatten())  # Convert the NumPy array to a tuple
+        newRelationRList.append(result_tuple)
+    return Relation(newRelationRList, False, n, dim)
     """
     return({
         "result": np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector),
@@ -186,8 +187,8 @@ def swapping(x, y):
     
     """
 
-    return Relation([tup for tup in x.rList if tup not in y.rList] + [tup for tup in y.rList if tup not in x.rList],
-                     x.n, x.arity)
+    return Relation([tup for tup in x.rList if tup not in y.rList] + [tup for tup in y.rList if tup not in x.rList], 
+                     False, x.n, x.arity)
 
 
 
@@ -205,8 +206,7 @@ class SwappingAutomorphism(Operation):
             b (Relation): The fixed n-ary image used for swapping pixels, represented as a relation
         """
 
-        size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList),
+        Operation.__init__(self, 1, lambda a: swapping(a, b),
                            cache_values=False)
 
 
@@ -242,8 +242,8 @@ class BlankingEndomorphism(Operation):
             b (Relation): The fixed n-ary image used for swapping pixels, represented by relation.
         """
 
-        size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList), cache_values=False)
+
+        Operation.__init__(self, 1, lambda a: swapping(a, b), cache_values=False)
 
 
 
@@ -321,11 +321,11 @@ a = Relation(graph, True, 6)
 a2 = Relation(graph2, True, 6)
 
 
-print(dot_product(a, a2))
-print(indicator_polymorphism((1, 1), [a, a2], [a, a2]))
-print(hamming_distance(a, a2))
-print(swapping(a, a2))
-print(blanking(a, a2))
+#print(dot_product(a, a2))
+#print(indicator_polymorphism((1, 1), [a, a2], [a, a2]))
+#print(hamming_distance(a, a2))
+#print(swapping(a, a2))
+#print(blanking(a, a2))
 
-newRelation = applyRandomPermutation(3, (2, 1, 0))
-print(newRelation.rList, newRelation.n)
+#newRelation = applyRandomPermutation(3, (2, 1, 0))
+#print(newRelation.rList, newRelation.n)
