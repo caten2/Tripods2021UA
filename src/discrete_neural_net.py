@@ -51,9 +51,9 @@ class Operation:
         if self.arity == 0:
             return self.func
         if self.cache_values:
-            if index not in self.values.keys():
-                self.values[index] = self.func(*index)
-            return self.values[index]
+            if hash(str(index)) not in self.values.keys():
+                self.values[hash(str(index))] = self.func(*index)
+            return self.values[hash(str(index))]
         return self.func(*index)
 
 
