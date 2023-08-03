@@ -65,14 +65,16 @@ def randomPermutationMatrix(n):
 
 def applyRandomPermutation(n, coords):
     print(n, coords)
-    print(type(coords[0]))
+    print(coords)
     print(len(coords))
     # n: length of side
     # coords: tuple of relation
     dim = len(coords)
     randomPermutation = randomPermutationMatrix(dim)
     column_vector = np.array([l for l in coords])
-    translationVector = np.array([(n-1)/2 for l in range(dim)])
+    translationVector = np.array([[(n-1)/2] for l in range(dim)])
+    print(column_vector)
+    print(translationVector)
     result = [tuple(np.add(np.matmul(randomPermutation, np.subtract(column_vector, translationVector)), translationVector))]
     return Relation(result, False, n, dim)
     """
@@ -96,45 +98,6 @@ class HyperoctohedralAutomorphism(Operation):
         
         Operation.__init__(self, 1, lambda x: applyRandomPermutation(x.n, x.rList), cache_values=False)
 
-
-def quarter_turn(x):
-    """
-    Rotate an image by a quarter turn counterclockwise.
-
-    Args:
-        x (Relation): The binary image to be rotated, represented by a relation.
-
-    Returns:
-        Relation: The same image rotated by a quarter turn counterclockwise, represented by
-            a relation.
-    """
-
-    return Relation([(x.n - (x.rList[k][1]+1), x.rList[k][0]) for k in range(len(x.rList))], False, x.n, x.arity)
-
-
-
-class RotationAutomorphism(Operation):
-    """
-    An automorphism of the Hamming graph obtained by rotating an image.
-    """
-
-    def __init__(self, k=1):
-        """
-        Create a rotation automorphism.
-
-        Argument:
-            k (int): The number of quarter turns by which to rotate the image counterclockwise.
-        """
-
-        if k % 4 == 0:
-            func = lambda x: x[0] # apply new operaiton
-        if k % 4 == 1:
-            func = lambda x: quarter_turn(x[0].rList)
-        if k % 4 == 2:
-            func = lambda x: quarter_turn(quarter_turn(x[0].rList))
-        if k % 4 == 3:
-            func = lambda x: quarter_turn(quarter_turn(quarter_turn(x[0].rList)))
-        Operation.__init__(self, 1, func=func, cache_values=False)
 
 
 
@@ -190,7 +153,7 @@ class IndicatorPolymorphism(Operation):
                 taken.
         """
 
-        Operation.__init__(self, len(c), lambda a: indicator_polymorphism(tup, a[0], c), cache_values=False)
+        Operation.__init__(self, len(c), lambda a: indicator_polymorphism(tup, a, c), cache_values=False)
 
 
 
@@ -208,35 +171,6 @@ def hamming_distance(x, y):
     """
     return len([tup for tup in x.rList if tup not in y.rList]) + len([tup for tup in y.rList if tup not in x.rList])
 
-
-def reflectionVertical(x):
-    """
-    Reflect an image across its vertical axis of symmetry.
-
-    Args:
-        x (Relation): The binary image to be reflected, represented by a relation.
-
-    Returns:
-        Relation: The same image reflected across its vertical axis of symmetry, represented by
-            a relation.
-    """
-    return Relation([(i, int((x.n - j -1)%x.n)) for (i, j) in x.rList], False, x.n, x.arity)
-
-
-
-class ReflectionAutomorphism(Operation):
-    """
-    An automorphism of the Hamming graph obtained by reflecting an image across its vertical axis of symmetry.
-    """
-
-    def __init__(self):
-        """
-        Create a reflection automorphism.
-
-        """
-        
-
-        Operation.__init__(self, 1, lambda x: reflectionVertical(x[0].rList), cache_values=False)
 
 
 def swapping(x, y):
@@ -272,7 +206,7 @@ class SwappingAutomorphism(Operation):
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a[0].rList, b.rList),
+        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList),
                            cache_values=False)
 
 
@@ -309,7 +243,7 @@ class BlankingEndomorphism(Operation):
         """
 
         size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a[0].rList, b.rList), cache_values=False)
+        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList), cache_values=False)
 
 
 
@@ -328,8 +262,6 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_images):
     
 
     endomorphisms = []
-    endomorphisms += [RotationAutomorphism(k) for k in range(4)]
-    endomorphisms.append(ReflectionAutomorphism())
     endomorphisms.append('Swapping')  
     endomorphisms.append('Blanking')  
     neighbors = [op]
@@ -388,11 +320,10 @@ graph2 = [
 a = Relation(graph, True, 6)
 a2 = Relation(graph2, True, 6)
 
-print(quarter_turn(a))
+
 print(dot_product(a, a2))
 print(indicator_polymorphism((1, 1), [a, a2], [a, a2]))
 print(hamming_distance(a, a2))
-print(reflectionVertical(a))
 print(swapping(a, a2))
 print(blanking(a, a2))
 
