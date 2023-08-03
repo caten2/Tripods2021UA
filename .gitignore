@@ -135,6 +135,9 @@ dmypy.json
 # PyCharm
 .idea/
 
+# Mac OS
+.DS_Store
+
 # Stored Trees, Dominions, and Homomorphisms
 Tree0/
 Tree1/
