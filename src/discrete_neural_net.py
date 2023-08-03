@@ -54,7 +54,6 @@ class Operation:
             if index not in self.values.keys():
                 self.values[index] = self.func(*index)
             return self.values[index]
-        print(*index, "hello")
         return self.func(*index)
 
 
