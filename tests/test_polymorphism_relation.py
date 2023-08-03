@@ -30,43 +30,49 @@ print('Applied random permutation')
 print(randomPermutation(img, ), "hello")
 
 # Create a swapping automorphism.
-swap = SwappingAutomorphism(training_pairs[37][0]['x'])
+imgToCompare = Relation(training_pairs[37][0]['x'], True, 28, 2)
+swap = SwappingAutomorphism(imgToCompare)
 # Display the image used for swapping.
 print('Image to use for swap')
 show(training_pairs[37][0]['x'])
 # Swap an image.
 print('Swapped image')
-show(swap(img, ))
+print(swap(img, ))
 
 # Create a blanking endomorphism.
-blank = BlankingEndomorphism(training_pairs[37][0]['x'])
+blank = BlankingEndomorphism(imgToCompare)
 # Display the image used for blanking.
 print('Image to use for blanking')
 show(training_pairs[37][0]['x'])
 # Swap an image.
 print('Blanked image')
-show(blank(img, ))
+print(blank(img, ))
 
 # Create a binary indicator polymorphism.
-ind_pol = IndicatorPolymorphism(0, 0, [training_pairs[2][0]['x'], training_pairs[51][0]['x']])
+firstImageForDotProduct = Relation(training_pairs[2][0]['x'], True, 28, 2)
+secondImageForDotProduct = Relation(training_pairs[51][0]['x'], True, 28, 2)
+imageList = [firstImageForDotProduct, secondImageForDotProduct]
+ind_pol = IndicatorPolymorphism((0, 0), imageList)
 # Display the images used for dot products.
 print('First image for dot product')
 show(training_pairs[2][0]['x'])
 print('Second image used for dot product')
 show(training_pairs[51][0]['x'])
 # Display a pair of images to which to apply the polymorphism.
-img1 = training_pairs[3][0]['x']
-img2 = training_pairs[5][0]['x']
+img1 = Relation(training_pairs[3][0]['x'], True, 28, 2)
+img2 = Relation(training_pairs[5][0]['x'], True, 28, 2)
 print('First input image')
-show(img1)
+print(img1)
 print('Second input image')
-show(img2)
+print(img2)
+imgListInput = [img1, img2]
 # Apply the polymorphism.
 print('Image obtained from polymorphism')
-show(ind_pol(img1, img2))
+print(ind_pol(imgListInput,))
 # Change one of the inputs and check the new output.
 print('New first input')
-img3 = training_pairs[34][0]['x']
-show(img3)
+img3 = Relation(training_pairs[34][0]['x'], True, 28, 2)
+print(img3)
+imgList3 = [img3, img2]
 print('New image obtained from polymorphism')
-show(ind_pol(img3, img2))
+print(ind_pol(imgList3))

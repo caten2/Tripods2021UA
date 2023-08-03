@@ -205,8 +205,7 @@ class SwappingAutomorphism(Operation):
             b (Relation): The fixed n-ary image used for swapping pixels, represented as a relation
         """
 
-        size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList),
+        Operation.__init__(self, 1, lambda a: swapping(a, b),
                            cache_values=False)
 
 
@@ -242,8 +241,8 @@ class BlankingEndomorphism(Operation):
             b (Relation): The fixed n-ary image used for swapping pixels, represented by relation.
         """
 
-        size = len(b)
-        Operation.__init__(self, 1, lambda a: swapping(a.rList, b.rList), cache_values=False)
+
+        Operation.__init__(self, 1, lambda a: swapping(a, b), cache_values=False)
 
 
 
