@@ -18,6 +18,7 @@ import numpy as np
 # Also, if ^ works, we would need to put it into the neighbor function (and remove rotation
 # and reflection endomorphisms from the function)
 
+# (づ ◕‿◕ )づ
 class Relation:
 
     def __init__(self, graphOrList, isGraph, n, arity=2):

@@ -5,9 +5,11 @@ Tests for binary image polymorphisms
 
 from pathlib import Path
 
-path = Path(__file__).parent.parent.absolute() / "src"
+path = str(Path(__file__).parent.parent.absolute() / "src")
 import sys
+myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
 sys.path.insert(0, path)
+
 from binary_image_polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism,\
     BlankingEndomorphism, IndicatorPolymorphism
 from mnist_training_binary import binary_train_for_zero, show
