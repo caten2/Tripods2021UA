@@ -210,14 +210,18 @@ def random_adjacent_image(image):
     Returns a random neighbor of a given binary image in the Hamming graph by switching the value of at most 1 pixel.
     """
     n = image.shape[1]
+
+    # Return the original image with probability 1/(n*n).
+    if random.randint(0, n * n) == 0:
+        return image
+
+    # Otherwise, flip a random pixel.
     pixel_i = random.randint(0, n - 1)
     pixel_j = random.randint(0, n - 1)
-    if pixel_i == n and pixel_j == n:
-        return image
-    else:
-        new_image = copy.deepcopy(image)
-        new_image[pixel_i][pixel_j] = 1 - image[pixel_i][pixel_j]
-        return new_image
+
+    new_image = copy.deepcopy(image)
+    new_image[pixel_i][pixel_j] = 1 - image[pixel_i][pixel_j]
+    return new_image
 
 
 def get_homomorphism(tree, n):
