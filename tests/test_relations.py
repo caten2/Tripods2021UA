@@ -7,7 +7,7 @@ print('Create a binary relation on the set {0,1,2} whose members are the pairs (
 Note that the pair (0,0) is repeated at the end of our list of pairs. Such duplicates are ignored by the constructor\n\
 for the `Relation` class.')
 print()
-R = Relation([[0, 0], [0, 1], [2, 0], [0, 0]], 3, 2)
+R = Relation([[0, 0], [0, 1], [2, 0], [0, 0]], 3)
 
 print('We can display some basic information about the relation.')
 print(R)
@@ -55,7 +55,7 @@ print('However, `R` and `S` are equal to each other.')
 print(R == S)
 print()
 
-print('We can also do comparisons. We have that `R` is contained in `S`, but this containment isn\'t proper')
+print('We can also do comparisons. We have that `R` is contained in `S`, but this containment isn\'t proper.')
 print(R <= S)
 print(R < S)
 print()
@@ -81,3 +81,41 @@ dictionaries.')
 tup = (R, S, T)
 set_of_relations = {R, S, T}
 D = {R: 1, S: 'a', T: R}
+print()
+
+print('Arithmetic operations are also possible for relations.')
+print('We can create the bitwise complement of a relation.')
+U = ~R
+U.show()
+print()
+
+print('We can take the symmetric difference of two relations if they have the same universe and arity.')
+X = Relation({(0, 0, 1), (0, 1, 1)}, 2)
+Y = Relation({(0, 0, 1), (1, 0, 1)}, 2)
+(X ^ Y).show()
+print()
+
+print('Similarly to the order comparisons, we will get an AssertionError if we try to add two relations with different \
+universes or arities.')
+Z = Relation({(0, 0, 1), (0, 1, 1)}, 3)
+try:
+    X ^ Z
+except AssertionError:
+    print('This will print since we have raised an AssertionError by trying to take the symmetric difference of two\
+relations with different universes.')
+print()
+
+print('Taking the set difference of two relations can be done as follows.')
+(X - Y).show()
+print()
+
+print('Taking the set intersection is done using the & operator. It is bitwise multiplication.')
+(X & Y).show()
+print()
+
+print('Taking the set union is done using the | operator.')
+(X | Y).show()
+print()
+
+X -= Y
+print(X)

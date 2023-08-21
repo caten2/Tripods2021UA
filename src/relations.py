@@ -1,6 +1,7 @@
 """
 Relations
 """
+from itertools import product
 
 
 class Relation:
@@ -76,7 +77,12 @@ class Relation:
             universe = '{0,...,' + str(self.universe_size - 1) + '}'
         else:
             universe = '{' + ','.join(map(str, range(self.universe_size))) + '}'
-        return 'A relation on {} of arity {} containing {} tuples'.format(universe, self.arity, len(self))
+        # Check whether 'tuple' needs to be pluralized.
+        if len(self) == 1:
+            plural = ''
+        else:
+            plural = 's'
+        return 'A relation on {} of arity {} containing {} tuple{}'.format(universe, self.arity, len(self), plural)
 
     def show(self):
         """
@@ -90,6 +96,9 @@ class Relation:
         """
         Determine whether another `Relation` object is of the correct type to be comparable with the relation in
         question.
+
+        Argument:
+            other (Relation): The other relation to which to compare this relation.
 
         Returns:
             bool: True when the two relations have the same universe and arity, False otherwise.
@@ -111,7 +120,7 @@ class Relation:
         """
         Check whether the relation is equal to another relation.
 
-        Arguments:
+        Argument:
             other (Relation): The other relation to which to compare this relation.
 
         Returns:
@@ -125,7 +134,7 @@ class Relation:
         """
         Check whether the relation is properly contained in another relation.
 
-        Args:
+        Argument:
             other (Relation): The other relation to which to compare this relation.
 
         Returns:
@@ -139,7 +148,7 @@ class Relation:
         """
         Check whether the relation is contained in another relation.
 
-        Args:
+        Argument:
             other (Relation): The other relation to which to compare this relation.
 
         Returns:
@@ -153,7 +162,7 @@ class Relation:
         """
         Check whether the relation properly contains in another relation.
 
-        Args:
+        Argument:
             other (Relation): The other relation to which to compare this relation.
 
         Returns:
@@ -167,7 +176,7 @@ class Relation:
         """
         Check whether the relation contains in another relation.
 
-        Args:
+        Argument:
             other (Relation): The other relation to which to compare this relation.
 
         Returns:
@@ -176,3 +185,133 @@ class Relation:
 
         assert self.comparison_check(other)
         return self.tuples >= other.tuples
+
+    def __invert__(self):
+        """
+        Create the complement of a relation. That is, a tuple in the appropriate Cartesian power of the universe will
+        belong to the complement if and only if it does not belong to the given relation.
+
+        Returns:
+            Relation: The relation which is dual to the given relation in the above sense.
+        """
+
+        return Relation((tup for tup in product(range(self.universe_size),
+                                                repeat=self.arity) if tup not in self.tuples),
+                        self.universe_size, self.arity)
+
+    def __sub__(self, other):
+        """
+        Take the difference of two relations. This is the same as the set difference of their sets of tuples.
+
+        Argument:
+            other (Relation): The other relation to remove from this relation.
+
+        Returns:
+            Relation: The relation with the same universe and arity as the inputs which is their set difference.
+        """
+
+        assert self.comparison_check(other)
+        return Relation(self.tuples.difference(other.tuples), self.universe_size, self.arity)
+
+    def __and__(self, other):
+        """
+        Take the intersection of two relations. This is the same as bitwise multiplication.
+
+        Argument:
+            other (Relation): The other relation to intersect with this relation.
+
+        Returns:
+            Relation: The relation with the same universe and arity as the inputs which is their intersection.
+        """
+
+        assert self.comparison_check(other)
+        return Relation(self.tuples.intersection(other.tuples), self.universe_size, self.arity)
+
+    def __or__(self, other):
+        """
+        Take the union of two relations. This is the same as bitwise disjunction.
+
+        Argument:
+            other (Relation): The other relation to union with this relation.
+
+        Returns:
+            Relation: The relation with the same universe and arity as the inputs which is their union.
+        """
+
+        assert self.comparison_check(other)
+        return Relation(self.tuples.union(other.tuples), self.universe_size, self.arity)
+
+    def __xor__(self, other):
+        """
+        Take the symmetric difference of two relations. This is the same as bitwise addition.
+
+        Argument:
+            other (Relation): The other relation to which to add this relation.
+
+        Returns:
+            Relation: The relation with the same universe and arity as the inputs which is their symmetric difference.
+        """
+
+        assert self.comparison_check(other)
+        return Relation(self.tuples.symmetric_difference(other.tuples), self.universe_size, self.arity)
+
+    def __isub__(self, other):
+        """
+
+        Args:
+            other:
+
+        Returns:
+
+        """
+
+        return self-other
+
+    def __iand__(self, other):
+        """
+
+        Args:
+            other:
+
+        Returns:
+
+        """
+
+        return self & other
+
+    def __ior__(self, other):
+        """
+
+        Args:
+            other:
+
+        Returns:
+
+        """
+
+        return self | other
+
+    def __ixor__(self, other):
+        """
+
+        Args:
+            other:
+
+        Returns:
+
+        """
+
+        return self ^ other
+
+    def dot(self, other):
+        """
+        Take the dot product of two relations modulo 2.
+
+        Args:
+            other:
+
+        Returns:
+
+        """
+
+        return len(self.tuples.intersection(other.tuples)) % 2
