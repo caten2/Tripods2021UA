@@ -2,6 +2,7 @@
 Relations test
 """
 from relations import Relation
+from itertools import product
 
 print('Create a binary relation on the set {0,1,2} whose members are the pairs (0,0), (0,1), and (2,0).\n\
 Note that the pair (0,0) is repeated at the end of our list of pairs. Such duplicates are ignored by the constructor\n\
@@ -129,3 +130,41 @@ val1 = X.dot(Y)
 val2 = len(X & Y) % 2
 print(val1, val2)
 print()
+
+print('We can check whether a given tuple belongs to a relation.')
+print((0, 0, 1) in Z)
+print((0, 1, 0) in Z)
+print()
+
+print('For binary relations, there are a few options for displaying the relation.')
+W = Relation(((0, 0), (1, 1), (1, 2), (2, 0)), 3)
+W.show()
+print()
+W.show('binary_pixels')
+print()
+W.show('sparse')
+print()
+
+print('Let\'s show off a little bit.')
+m = 29
+# Create the circle of radius 0 in over Z/mZ.
+A = Relation(((i, j) for (i, j) in product(range(m), repeat=2) if (i ** 2 + j ** 2) % m == 0), m)
+# Create two translates of it.
+B = Relation(((i, j) for (i, j) in product(range(m), repeat=2) if ((i+2) ** 2 + j ** 2) % m == 0), m)
+C = Relation(((i, j) for (i, j) in product(range(m), repeat=2) if ((i+3) ** 2 + (j-1) ** 2) % m == 0), m)
+# Find all points which lie on the complement of the first circle and either of the two translates.
+D = ~A & (B | C)
+D.show('sparse')
+print()
+
+print('Note that relations are iterable.')
+for tup in Z:
+    print(tup)
+print(list(Z))
+print()
+
+print('Relations can also be used as boolean values.')
+if Z:
+    print('There are members of `Z.tuples`.')
+if Z ^ Z:
+    print('This won\'t be printed because `Z ^ Z` is empty.')

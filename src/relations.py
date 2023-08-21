@@ -84,13 +84,72 @@ class Relation:
             plural = 's'
         return 'A relation on {} of arity {} containing {} tuple{}'.format(universe, self.arity, len(self), plural)
 
-    def show(self):
+    def __contains__(self, tup):
         """
-        Display the members of `self.tuples`.
+        Check whether a tuple belongs to a relation.
+
+        Argument:
+            tup (tuple of int): The tuple we are checking.
+
+        Returns:
+            bool: True when `tup` belongs to `self.tuples`, False otherwise.
         """
 
-        for tup in self.tuples:
-            print(tup)
+        return tup in self.tuples
+
+    def __iter__(self):
+        """
+        Produce an iterator for the tuples in the relation.
+
+        Returns:
+            frozenset: The set of tuples in the relation.
+        """
+
+        return iter(self.tuples)
+
+    def __bool__(self):
+        """
+        Cast a relation to a boolean value.
+
+        Returns:
+            bool: True when self.tuples is nonempty, False otherwise.
+        """
+
+        return bool(self.tuples)
+
+    def show(self, special_binary_display=None):
+        """
+        Display the members of `self.tuples`.
+
+        Arguments:
+            special_binary_display (str): Show a binary relation through some other method than just printing pairs.
+                The default is None, which means pairs will be printed as usual. This can be set to 'binary_pixels' in
+                order to print out the binary image corresponding to the relation or 'sparse' to display the presence of
+                a pair as an X and the absence of a pair as a space.
+        """
+
+        if special_binary_display:
+            if special_binary_display == 'binary_pixels':
+                for row in range(self.universe_size):
+                    line = ''
+                    for column in range(self.universe_size):
+                        if (row, column) in self:
+                            line += '1'
+                        else:
+                            line += '0'
+                    print(line)
+            if special_binary_display == 'sparse':
+                for row in range(self.universe_size):
+                    line = ''
+                    for column in range(self.universe_size):
+                        if (row, column) in self:
+                            line += 'X'
+                        else:
+                            line += ' '
+                    print(line)
+        else:
+            for tup in self:
+                print(tup)
 
     def comparison_check(self, other):
         """
@@ -195,8 +254,7 @@ class Relation:
             Relation: The relation which is dual to the given relation in the above sense.
         """
 
-        return Relation((tup for tup in product(range(self.universe_size),
-                                                repeat=self.arity) if tup not in self.tuples),
+        return Relation((tup for tup in product(range(self.universe_size), repeat=self.arity) if tup not in self),
                         self.universe_size, self.arity)
 
     def __sub__(self, other):
@@ -257,62 +315,67 @@ class Relation:
 
     def __isub__(self, other):
         """
+        Take the set difference of two relations with augmented assignment.
 
-        Args:
-            other:
+        Argument:
+            other (Relation): The other relation to remove from this relation.
 
         Returns:
-
+            Relation: The relation with the same universe and arity as the inputs which is their set difference.
         """
 
         return self-other
 
     def __iand__(self, other):
         """
+        Take the set intersection of two relations with augmented assignment.
 
-        Args:
-            other:
+        Argument:
+            other (Relation): The other relation to remove from this relation.
 
         Returns:
-
+            Relation: The relation with the same universe and arity as the inputs which is their intersection.
         """
 
         return self & other
 
     def __ior__(self, other):
         """
+        Take the set union of two relations with augmented assignment.
 
-        Args:
-            other:
+        Argument:
+            other (Relation): The other relation to union with this relation.
 
         Returns:
-
+            Relation: The relation with the same universe and arity as the inputs which is their union.
         """
 
         return self | other
 
     def __ixor__(self, other):
         """
+        Take the symmetric difference of two relations with augmented assignment.
 
-        Args:
-            other:
+        Argument:
+            other (Relation): The other relation to which to add this relation.
 
         Returns:
-
+            Relation: The relation with the same universe and arity as the inputs which is their symmetric difference.
         """
 
         return self ^ other
 
     def dot(self, other):
         """
-        Take the dot product of two relations modulo 2.
+        Take the dot product of two relations modulo 2. This is the same as computing the size of the intersection of
+        the two relations modulo 2.
 
-        Args:
-            other:
+        Argument:
+            other (Relation): The other relation with to take the dot product.
 
         Returns:
-
+            int: Either 0 or 1, depending on the parity of the number of tuples in `self` and `other`.
         """
 
         assert self.comparison_check(other)
-        return len(self.tuples.intersection(other.tuples)) % 2
+        return len(self & other) % 2
