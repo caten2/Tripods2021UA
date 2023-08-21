@@ -314,4 +314,5 @@ class Relation:
 
         """
 
+        assert self.comparison_check(other)
         return len(self.tuples.intersection(other.tuples)) % 2

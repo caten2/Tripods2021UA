@@ -117,5 +117,15 @@ print('Taking the set union is done using the | operator.')
 (X | Y).show()
 print()
 
+print('Any of these binary operations can be done with augmented assignment as well.')
+print(X)
 X -= Y
 print(X)
+print()
+
+print('We can take the dot product of two relations modulo 2, which is the same as the size of the intersection \
+modulo 2.')
+val1 = X.dot(Y)
+val2 = len(X & Y) % 2
+print(val1, val2)
+print()
