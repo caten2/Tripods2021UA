@@ -1,38 +1,30 @@
 """
 Check that MNIST training/test data is functioning
 """
-from pathlib import Path
-
-path = str(Path(__file__).parent.parent.absolute() / "src")
-import sys
-myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
-sys.path.insert(0, path)
-
 import mnist_training_binary
-from mnist_training_binary import show
 
 # Create a list of 1000 training pairs.
-training_pairs = mnist_training_binary.mnist_training_pairs(1000)
+training_pairs = tuple(mnist_training_binary.mnist_binary_relations('train', 1000))
 # Display the 59th image.
-show(training_pairs[59][0])
+training_pairs[59][0].show('sparse')
 # Display the corresponding label. Can you see the digit in the above array?
 print(training_pairs[59][1])
 print()
 
 # Create a list of 1000 test pairs.
-test_pairs = mnist_training_binary.mnist_test_pairs(1000)
+test_pairs = tuple(mnist_training_binary.mnist_binary_relations('test', 1000))
 # Display the 519th image.
-show(test_pairs[519][0])
+test_pairs[519][0].show('sparse')
 # Display the corresponding label. Can you see the digit in the above array?
 print(test_pairs[519][1])
 print()
 
 # Create a list of 100 training pairs for use with a discrete neural net.
-zero_training_pairs = mnist_training_binary.binary_train_for_zero(100)
+zero_training_pairs = tuple(mnist_training_binary.binary_mnist_for_zero('train', 100))
 # This digit 5 is labeled with an all-white image (all zeroes) to indicate it is not a handwritten 0.
-show(zero_training_pairs[0][0])
-show(zero_training_pairs[0][1])
+zero_training_pairs[0][0]['x'].show('sparse')
+zero_training_pairs[0][1][0].show('binary_pixels')
 print()
 # This digit 0 is labelled with an all-black image (all ones) to indicate it is a handwritten 0.
-show(zero_training_pairs[21][0])
-show(zero_training_pairs[21][1])
+zero_training_pairs[21][0]['x'].show('sparse')
+zero_training_pairs[21][1][0].show('binary_pixels')
