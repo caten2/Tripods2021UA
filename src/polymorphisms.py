@@ -2,8 +2,9 @@
 Polymorphisms
 """
 from relations import Relation
-from operations import Operation
+from discrete_neural_net import Operation
 import random
+import numpy
 
 
 def quarter_turn(rel):
@@ -17,7 +18,7 @@ def quarter_turn(rel):
         Relation: The same relation rotated by a quarter turn counterclockwise.
     """
 
-    return Relation(((rel.universe_size - tup[1], tup[0]) for tup in rel), rel.universe_size)
+    return Relation(((rel.universe_size - tup[1], tup[0]) for tup in rel), rel.universe_size, rel.arity)
 
 
 class RotationAutomorphism(Operation):
@@ -33,14 +34,11 @@ class RotationAutomorphism(Operation):
             k (int): The number of quarter turns by which to rotate the image counterclockwise.
         """
 
-        if k % 4 == 0:
-            func = lambda *x: x[0]
-        if k % 4 == 1:
-            func = lambda *x: quarter_turn(x[0])
-        if k % 4 == 2:
-            func = lambda *x: quarter_turn(quarter_turn(x[0]))
-        if k % 4 == 3:
-            func = lambda *x: quarter_turn(quarter_turn(quarter_turn(x[0])))
+        def func(x):
+            for _ in range(k % 4):
+                x = quarter_turn(x)
+            return x
+
         Operation.__init__(self, 1, func=func)
 
 
@@ -55,7 +53,7 @@ class ReflectionAutomorphism(Operation):
         """
 
         Operation.__init__(self, 1, lambda rel: Relation(((rel.universe_size - tup[0], tup[1]) for tup in rel),
-                                                         rel.universe_size))
+                                                         rel.universe_size, rel.arity))
 
 
 class SwappingAutomorphism(Operation):
@@ -109,7 +107,7 @@ def indicator_polymorphism(tup, a, b):
     a = tuple(a)
     universe_size = a[0].universe_size
     if all(rel[0].dot(rel[1]) for rel in zip(a, b)):
-        return Relation((tup, ), universe_size)
+        return Relation((tup,), universe_size)
     else:
         return Relation(tuple(), universe_size, len(tup))
 
@@ -169,8 +167,7 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
                     endomorphisms_to_use[i] = BlankingEndomorphism(random.choice(constant_relations))
                 if endomorphisms_to_use[i] == 'Swapping':
                     endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_relations))
-            yield Operation(op.arity, lambda *x: endomorphisms_to_use[-1](
-                op.func([endomorphisms_to_use[j](x[j]) for j in range(op.arity)])))
+            yield endomorphisms_to_use[-1][op[endomorphisms_to_use[:-1]]]
         else:
             if op.arity == 1:
                 random_endomorphism = random.choice(endomorphisms)
@@ -179,11 +176,26 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
                 if random_endomorphism == 'Swapping':
                     random_endomorphism = SwappingAutomorphism(random.choice(constant_relations))
                 yield random_endomorphism
-            if op.arity == 2 and random.randint(0, 1) and use_dominions:
-                pass
-                # This is where the (binary) dominion polymorphisms would be implemented.
-            else:
-                # The universe size and relation arity for the indicator polymorphisms is read off from the
-                # `constant_relations`.
-                yield IndicatorPolymorphism(tuple(random.choice(universe_size) for _ in range(arity)),
-                                            random.choices(constant_relations, k=op.arity))
+            if op.arity >= 2:
+                if random.randint(0, 1) and use_dominions:
+                    pass
+                    # This is where the (binary) dominion polymorphisms would be implemented.
+                else:
+                    # The universe size and relation arity for the indicator polymorphisms is read off from the
+                    # `constant_relations`.
+                    yield IndicatorPolymorphism(tuple(random.randrange(universe_size) for _ in range(arity)),
+                                                random.choices(constant_relations, k=op.arity))
+
+
+def hamming_loss(x, y):
+    """
+
+    Args:
+        x:
+        y:
+
+    Returns:
+
+    """
+
+    return numpy.average(tuple(len(rel0 ^ rel1) for (rel0, rel1) in zip(x, y)))

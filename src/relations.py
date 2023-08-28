@@ -38,6 +38,7 @@ class Relation:
 
     def __init__(self, tuples, universe_size, arity=0):
         """
+        Construct a relation from a collection of tuples.
 
         Arguments:
             tuples (iterable of iterable of int): The tuples belonging to the relation.
