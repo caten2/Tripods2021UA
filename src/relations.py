@@ -3,6 +3,7 @@ Relations
 """
 
 
+
 class Relation:
     """
     A finitary relation on a finite set.
