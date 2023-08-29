@@ -41,20 +41,60 @@ class Operation:
         if self.cache_values:
             self.values = {}
 
-    def __call__(self, *index):
+    def __call__(self, *tup):
         """
         Compute the value of the Operation on given inputs.
 
         Argument:
-            index (tuple): The tuple of inputs to plug in to the Operation.
+            tup (tuple of int): The tuple of inputs to plug in to the Operation.
         """
         if self.arity == 0:
             return self.func
         if self.cache_values:
-            if hash(str(index)) not in self.values.keys():
-                self.values[hash(str(index))] = self.func(*index)
-            return self.values[hash(str(index))]
-        return self.func(*index)
+            if tup not in self.values:
+                self.values[tup] = self.func(*tup)
+            return self.values[tup]
+        return self.func(*tup)
+
+    def __getitem__(self, ops):
+        """
+        Form the generalized composite with a collection of operations. The generalized composite of an operation f of
+        arity k with k-many operations g_i of arity n is an n-ary operation f[g_1,...,g_k] where we evaluate as
+        (f[g_1,...,g_k])(x_1,...,x_n)=f(g_1(x_1,...,x_n),...,g_k(x_1,...,x_n)).
+
+        Currently, this will not work when applied to a 0-ary operation.
+
+        Args:
+            ops (Operation | iterable of Operation): The operations with which to form the generalized composite. This
+                should have length `self.arity` and all of its entries should have the same arities.
+
+        Returns:
+            Operation: The result of composing the operations in question.
+        """
+
+        assert self.arity > 0
+        # When a single operation is being passed we turn it into a list.
+        if type(ops) is Operation:
+            ops = [ops]
+        assert len(ops) == self.arity
+        arities = frozenset(op.arity for op in ops)
+        assert len(arities) == 1
+        new_arity = tuple(arities)[0]
+
+        def composite(*tup):
+            """
+            Evaluate the composite operation.
+
+            Args:
+                *tup: A tuple of arguments to the composite operation. The length of this should be the arity of the
+
+            Returns:
+                object: The result of applying the generalized composite operation to the arguments.
+            """
+
+            return self(*(op(*tup) for op in ops))
+
+        return Operation(new_arity, composite)
 
 
 class Neuron:
@@ -154,8 +194,8 @@ class NeuralNet:
         current_vals = x
         for layer in self.architecture[1:]:
             for neuron in layer.neurons:
-                index = tuple(current_vals[input_neuron] for input_neuron in neuron.inputs)
-                current_vals[neuron] = neuron.activation_func(*index)
+                tup = tuple(current_vals[input_neuron] for input_neuron in neuron.inputs)
+                current_vals[neuron] = neuron.activation_func(*tup)
         return tuple(current_vals[neuron] for neuron in self.architecture[-1].neurons)
 
     def empirical_loss(self, training_pairs, loss_func=zero_one_loss):
@@ -172,8 +212,8 @@ class NeuralNet:
                 the training set and 1 being complete failure.
         """
 
-        # Create a list of loss function values for each pair in our training set, then average them.
-        return numpy.average([loss_func(self.feed_forward(x), y) for (x, y) in training_pairs])
+        # Create a tuple of loss function values for each pair in our training set, then average them.
+        return numpy.average(tuple(loss_func(self.feed_forward(x), y) for (x, y) in training_pairs))
 
     def training_step(self, training_pairs, neighbor_func, loss_func=zero_one_loss):
         """
@@ -196,7 +236,7 @@ class NeuralNet:
         # Choose a random neuron from that layer.
         neuron = random.choice(layer.neurons)
         # Store a list of all the adjacent operations given by the supplied neighbor function.
-        ops = neighbor_func(neuron.activation_func)
+        ops = list(neighbor_func(neuron.activation_func))
         # Also keep a list of the empirical loss associated with each of the operations in `ops`.
         emp_loss = []
         # Try each of the operations in `ops`.

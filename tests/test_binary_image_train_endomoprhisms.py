@@ -1,16 +1,10 @@
 """
 Train a discrete neural net using only endomorphisms
 """
-from pathlib import Path
-
-path = str(Path(__file__).parent.parent.absolute() / "src")
-import sys
-myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
-sys.path.insert(0, path)
-
+import mnist_training_binary
 from discrete_neural_net import Neuron, Layer, NeuralNet
-from binary_image_polymorphisms import RotationAutomorphism, polymorphism_neighbor_func, hamming_distance
-from mnist_training_binary import binary_train_for_zero, show
+from polymorphisms import RotationAutomorphism, polymorphism_neighbor_func, hamming_loss
+from mnist_training_binary import binary_mnist_for_zero
 
 # Our neural net will have one input.
 layer0 = Layer(('x',))
@@ -23,15 +17,30 @@ net = NeuralNet([layer0, layer1])
 
 # The MNIST training set will be used to train this discrete neural net to detect the handwritten digit 0.
 # Load some binary images from the modified MNIST training set.
-training_pairs = binary_train_for_zero(100)
+# Note that `binary_mnist_for_zero` is a generator, so it must be made into a tuple in order to be reused.
+training_pairs = tuple(binary_mnist_for_zero('train', 100))
 
 # We can check out empirical loss with respect to this training set.
-# Our loss function will be the Hamming distance.
-print(net.empirical_loss(training_pairs, loss_func=lambda x, y: hamming_distance(x[0], y[0])))
+# Our loss function will be the Hamming distance, which is the size of the symmetric difference of two relations.
+print(net.empirical_loss(training_pairs, hamming_loss))
 print()
 
-# Use the training set for a list of constant images to use for swapping/blanking endomorphisms.
-constant_images = [pair[0]['x'] for pair in training_pairs]
+# Use the training set for a tuple of constant images to use for swapping/blanking endomorphisms.
+constant_relations = tuple(pair[0]['x'] for pair in training_pairs)
 
-net.train(training_pairs, lambda op: polymorphism_neighbor_func(op, 4, constant_images=constant_images),
-          100, lambda x, y: hamming_distance(x[0], y[0]), report_loss=True)
+# Train the neural net using this training data.
+net.train(training_pairs, lambda op: polymorphism_neighbor_func(op, 4, constant_relations),
+          10, hamming_loss, report_loss=True)
+print()
+
+# We can also test the neural net we have trained against the MNIST test data.
+print(net.empirical_loss(binary_mnist_for_zero('test', 100), hamming_loss))
+
+# Let's see what the model has actually learned.
+for pair in training_pairs:
+    pair[0]['x'].show('sparse')
+    net.feed_forward(pair[0])[0].show('sparse')
+    print()
+
+# Most images in the training data are not handwritten zeroes, so our net has learned to guess that the answer is a
+# mostly blank image. That is, it's basically always guessing the number will not be a handwritten 0.
