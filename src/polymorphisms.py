@@ -2,6 +2,7 @@
 Polymorphisms
 """
 from relations import Relation
+from operations import Projection
 from discrete_neural_net import Operation
 import random
 import numpy
@@ -128,7 +129,7 @@ class IndicatorPolymorphism(Operation):
             constants. Should contain at least one entry.
         """
 
-        Operation.__init__(self, b[0].arity, lambda *a: indicator_polymorphism(tup, a, b))
+        Operation.__init__(self, len(b), lambda *a: indicator_polymorphism(tup, a, b))
 
 
 def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dominions=False):
@@ -167,6 +168,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
                     endomorphisms_to_use[i] = BlankingEndomorphism(random.choice(constant_relations))
                 if endomorphisms_to_use[i] == 'Swapping':
                     endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_relations))
+            for i in range(len(endomorphisms_to_use)-1):
+                endomorphisms_to_use[i] = endomorphisms_to_use[i][Projection(op.arity, i)]
             yield endomorphisms_to_use[-1][op[endomorphisms_to_use[:-1]]]
         else:
             if op.arity == 1:

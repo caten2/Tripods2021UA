@@ -73,3 +73,12 @@ class Identity(Operation):
 
     def __init__(self):
         Operation.__init__(self, 1, lambda *x: x[0], cache_values=False)
+
+
+class Projection(Operation):
+    """
+
+    """
+
+    def __init__(self, arity, coordinate):
+        Operation.__init__(self, arity, lambda *x: x[coordinate], cache_values=False)

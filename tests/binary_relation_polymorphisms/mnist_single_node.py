@@ -1,7 +1,6 @@
 """
 Train a discrete neural net using only endomorphisms
 """
-import mnist_training_binary
 from discrete_neural_net import Neuron, Layer, NeuralNet
 from polymorphisms import RotationAutomorphism, polymorphism_neighbor_func, hamming_loss
 from mnist_training_binary import binary_mnist_for_zero

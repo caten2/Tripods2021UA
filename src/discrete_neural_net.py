@@ -74,7 +74,7 @@ class Operation:
 
         assert self.arity > 0
         # When a single operation is being passed we turn it into a list.
-        if type(ops) is Operation:
+        if isinstance(ops, Operation):
             ops = [ops]
         assert len(ops) == self.arity
         arities = frozenset(op.arity for op in ops)

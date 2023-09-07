@@ -2,6 +2,7 @@
 Modified MNIST training set for binary image classification
 """
 import json
+from pathlib import Path
 from relations import Relation
 from itertools import product
 
@@ -23,7 +24,7 @@ def import_mnist_data(data_type):
         dict: The dictionary of data specifying a greyscale image and its intended handwritten digit.
     """
 
-    with open('..//mnist//{}_data.json'.format(data_type), 'r') as read_file:
+    with open(str(Path(__file__).parent.resolve())+'//..//mnist//{}_data.json'.format(data_type), 'r') as read_file:
         for line in read_file:
             data = json.loads(line)
             # By default, all the integer keys in the dictionary returned from the JSON file will be converted to
