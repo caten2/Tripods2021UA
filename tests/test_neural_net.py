@@ -1,8 +1,9 @@
 """
 Discrete neural net test
 """
-from discrete_neural_net import Neuron, Layer, NeuralNet
-import operations
+from neural_net import Neuron, Layer, NeuralNet
+import arithmetic_operations
+from random_neural_net import RandomOperation
 from itertools import product
 
 # Our neural net will have three inputs.
@@ -13,12 +14,12 @@ order = 100
 
 # The first layer has two neurons, which are initialized to carry modular addition and a random operation as
 # activation functions.
-neuron0 = Neuron(operations.ModularAddition(order), ('x0', 'x1'))
-neuron1 = Neuron(operations.RandomOperation(order, 2), ('x1', 'x2'))
+neuron0 = Neuron(arithmetic_operations.ModularAddition(order), ('x0', 'x1'))
+neuron1 = Neuron(RandomOperation(order, 2), ('x1', 'x2'))
 layer1 = Layer([neuron0, neuron1])
 
 # The third layer has a single neuron, which is initialized to carry modular multiplication.
-neuron2 = Neuron(operations.ModularMultiplication(5), [neuron0, neuron1])
+neuron2 = Neuron(arithmetic_operations.ModularMultiplication(5), [neuron0, neuron1])
 layer2 = Layer([neuron2])
 
 net = NeuralNet([layer0, layer1, layer2])
@@ -50,9 +51,9 @@ def neighbor_func(op):
         list of Operations: The neighboring Operations.
     """
 
-    return [operations.ModularAddition(order),
-            operations.ModularMultiplication(order),
-            operations.RandomOperation(order, 2)]
+    return [arithmetic_operations.ModularAddition(order),
+            arithmetic_operations.ModularMultiplication(order),
+            RandomOperation(order, 2)]
 
 
 # We can now begin training.

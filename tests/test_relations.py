@@ -144,6 +144,9 @@ W.show('binary_pixels')
 print()
 W.show('sparse')
 print()
+print('We can even produce LaTeX for a matrix.')
+W.show('latex_matrix')
+print()
 
 print('Let\'s show off a little bit.')
 m = 29

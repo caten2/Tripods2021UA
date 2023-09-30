@@ -2,8 +2,7 @@
 Polymorphisms
 """
 from relations import Relation
-from operations import Projection
-from discrete_neural_net import Operation
+from operations import Operation, Projection
 import random
 import numpy
 
@@ -192,13 +191,17 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
 
 def hamming_loss(x, y):
     """
+    Compute the average Hamming loss between two iterables of relations. It is assumed that `x` and `y` have the same
+    length and that corresponding pairs of relations in `x` and `y` have the same arity so that their symmetric
+    difference may be taken. In practice, this is always used when all the relations belonging to `x` and `y` have the
+    same arity.
 
     Args:
-        x:
-        y:
+        x (iterable of Relation): A sequence of relations.
+        y (iterable of Relation): Another sequence of relations.
 
     Returns:
-
+        numpy.float64: The average size of the symmetric difference of corresponding pairs of relations in `x` and `y`.
     """
 
     return numpy.average(tuple(len(rel0 ^ rel1) for (rel0, rel1) in zip(x, y)))
