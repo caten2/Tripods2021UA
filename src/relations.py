@@ -168,6 +168,14 @@ class Relation:
                         else:
                             line += ' '
                     print(line)
+            if special_binary_display == 'latex_matrix':
+                output = '\\begin{bmatrix}'
+                for row in range(self.universe_size):
+                    output += '&'.join(map(str, (int((row, column) in self) for column in range(self.universe_size))))
+                    if row != self.universe_size-1:
+                        output += '\\\\'
+                output += '\\end{bmatrix}'
+                print(output)
         else:
             for tup in self:
                 print(tup)
