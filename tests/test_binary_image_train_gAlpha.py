@@ -8,7 +8,7 @@ import sys
 myFolderPath = '/Users/kevinxue/Downloads/Tripods2023/Tripods2021UA/src'
 sys.path.insert(0, path)
 
-from discrete_neural_net import Neuron, Layer, NeuralNet
+from neural_net import Neuron, Layer, NeuralNet
 from binary_image_polymorphisms import RotationAutomorphism, polymorphism_neighbor_func, hamming_distance
 from mnist_training_binary import binary_train_for_zero, show
 from dominion import getGAlpha
