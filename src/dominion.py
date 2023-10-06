@@ -7,7 +7,7 @@ Tools for creating 2-dimensional dominions
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from discrete_neural_net import Operation
+from operations import Operation
 from relations import Relation
 
 
