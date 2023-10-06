@@ -7,9 +7,8 @@ Tools for creating 2-dimensional dominions
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-import math
-import copy
 from discrete_neural_net import Operation
+from relations import Relation
 
 
 # --------------- Classes -----------------
@@ -77,9 +76,9 @@ class Graph:
 class DominionPolymorphism(Operation):
 
     def __init__(self, dominion, alpha):
-        def _func(*images):
-            # images should be a tuple of images
-            weights = (hamming_weight(images[0]), hamming_weight(images[1]))
+        def _func(*relations):
+            # relations should be a tuple of relations
+            weights = (hamming_weight(relations[0]), hamming_weight(relations[1]))
             temp = dominion(weights)
             return alpha(temp)
 
@@ -174,7 +173,7 @@ def random_dominion(size, set_of_labels, constraint_graph=None):
         partial_dominion = [random.choices(tuple(set_of_labels), k=size)]
     else:
         partial_dominion = [[random.choice(tuple(set_of_labels))]]
-        for _ in range(1, size):
+        for _ in range(size - 1):
             partial_dominion[0].append(
                 random.choice(constraint_graph.get_neighbors(partial_dominion[0][-1])))
     for _ in range(size - 1):
@@ -186,58 +185,56 @@ def random_dominion(size, set_of_labels, constraint_graph=None):
 # --------------- Creating Polymorphisms ---------------
 
 
-def hamming_weight(image):
+def hamming_weight(relation):
     """
-    Returns the Hamming weight of a 2D binary image.
+    Returns the Hamming weight of a binary relation.
     """
-    weight = sum([sum(row) for row in image])
-    return weight
+    return len(relation)
 
 
-def random_image(dim):
+def random_relation(universe_size):
     """
-    Returns a random binary image of size d * d.
+    Returns a random binary relation on [0, universe_size - 1].
     """
-    image = np.empty((dim, dim))
-    for i in range(0, dim):
-        for j in range(0, dim):
-            image[i][j] = random.randint(0, 1)
-    return image
+    rel = []
+    for i in range(universe_size):
+        for j in range(universe_size):
+            if random.randint(0, 1) == 1:
+                rel.append((i, j))
+    return Relation(rel, universe_size, arity=2)
 
 
-def random_adjacent_image(image):
+def random_adjacent_relation(relation):
     """
-    Returns a random neighbor of a given binary image in the Hamming graph by switching the value of at most 1 pixel.
+    Returns a random neighbor of a given binary relation in the Hamming graph by "switching" at most 1 tuple.
     """
-    n = image.shape[1]
+    size = relation.universe_size
 
-    # Return the original image with probability 1/(n*n).
-    if random.randint(0, n * n) == 0:
-        return image
+    # Return the original relation with probability 1/(size * size).
+    if random.randint(0, size * size - 1) == 0:
+        return relation
 
-    # Otherwise, flip a random pixel.
-    pixel_i = random.randint(0, n - 1)
-    pixel_j = random.randint(0, n - 1)
+    # Otherwise, flip a random tuple.
+    rand_tuple = (random.randint(0, size - 1), random.randint(0, size - 1))
+    rand_rel = Relation([rand_tuple], size, relation.arity)
 
-    new_image = copy.deepcopy(image)
-    new_image[pixel_i][pixel_j] = 1 - image[pixel_i][pixel_j]
-    return new_image
+    return relation ^ rand_rel
 
 
 def get_homomorphism(tree, n):
     """
-    Returns a homomorphism  from a tree to the Hamming graph H_n.
+    Returns a homomorphism from a tree to the Hamming graph H_n.
     """
     vertex = tree.root
     neighbors = tree.get_neighbors(vertex)
-    hom = {int(vertex): random_image(n)}
+    hom = {int(vertex): random_relation(n)}
 
     while neighbors:
         new_vertex = neighbors[0]
         neighbors = tree.get_neighbors(new_vertex)
         neighbors.remove(vertex)
 
-        hom.update({int(new_vertex): random_adjacent_image(hom.get(int(vertex)))})
+        hom.update({int(new_vertex): random_adjacent_relation(hom.get(int(vertex)))})
         vertex = new_vertex
 
     return hom
@@ -275,7 +272,6 @@ def read_dominion(file_name):
     return dominion
 
 
-# TODO: See if parsing file can be done better (e.g., using `eval`).
 def read_tree(file_name):
     """
     Reads a tree from a file and returns the tree as a `Graph`.
