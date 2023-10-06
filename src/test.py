@@ -4,7 +4,7 @@ path = str(Path(__file__).parent.absolute() / "src")
 import sys
 sys.path.insert(0, path)
 
-from discrete_neural_net import Operation
+from neural_net import Operation
 from itertools import product
 import random
 import numpy as np

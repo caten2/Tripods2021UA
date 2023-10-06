@@ -19,25 +19,47 @@ arXiv.
 
 ### Project structure
 
+In the lists which follow, scripts marked with (ORGANIZE) are not part of the current, functioning implementation. These
+may be in the process of refactoring or being reorganized into another part of the repo.
+
 The scripts that define basic components of the system are in the `src` folder. These are:
 
+* `arithmetic_operations.py`: Definitions of arithmetic operations modulo some positive integer. These are used to test
+the basic functionality of the `NeuralNet` class.
 * `binary_image_polymorphisms.py`: Definitions of polymorphisms of the Hamming graph, as well as a neighbor function for
-  the learning algorithm implemented in `discrete_neural_net.py`.
-* `discrete_neural_net.py`: Definition of the `NeuralNet` class, including feeding forward and learning.
+  the learning algorithm implemented in `neural_net.py`. (ORGANIZE)
+* `neural_net.py`: Definition of the `NeuralNet` class, including feeding forward and learning.
 * `dominion.py`: Tools for creating dominions, a combinatorial object used in the definition of the dominion
-  polymorphisms in `binary_image_polymorphisms.py`.
+  polymorphisms in `polymorphisms.py`. (ORGANIZE)
 * `hyperoctohedral.py`: Definitions of polymorphisms of the Hamming graph which come from the action of the
-  hyperoctahedral group.
+  hyperoctahedral group. (ORGANIZE)
 * `mnist_training_binary.py`: Describes how to manufacture binary relations from the MNIST dataset which can be passed
-  as arguments into the polymorphisms in `binary_image_polymorphisms.py`.
+  as arguments into the polymorphisms in `polymorphisms.py`.
 * `operations.py`: Definitions pertaining to the `Operation` class, whose objects are to be thought of as operations in
   the sense of universal algebra/model theory.
+* `polymorphisms.py`: Definitions of polymorphisms of the Hamming graph, as well as a neighbor function for
+  the learning algorithm implemented in `neural_net.py`.
 * `random_neural_net.py`: Tools for making `NeuralNet` objects with randomly-chosen architectures and activation
   functions.
+* `relations.py`: Definitions pertaining to the `Relation` class, whose objects are relations in the sense of model
+theory.
+* `test.py`: A test script which should be moved to the `tests` directory. (ORGANIZE)
 
 The scripts that run various tests and example applications of the system are in the `tests` folder. These are:
 
-* (TODO: Describe these after cleaning up the folder.)
+* Those in the subdirectory `binary_relation_polymorphisms`: (Add description.)
+* `example_dominion.py`: (Add description.) (ORGANIZE)
+* `test_binary_image_train_gAlpha.py`: (Add description.) (ORGANIZE)
+* `test_binary_relation_polymorphisms`: Examples of the basic functionality for the polymorphisms defined in
+`polymorphisms.py` when applied to binary relations.
+* `test_dominion.py`: (Add description.) (ORGANIZE)
+* `test_gAlpha.py`: (Add description.) (ORGANIZE)
+* `test_mnist_training_binary.py`: Verification that MNIST training data is being loaded correctly from the training
+dataset.
+* `test_neural_net.py`: Examples of creating `NeuralNet`s using activation functions from
+`arithmetic_operations.py` and the `RandomOperation` from `random_neural_net.py`.
+* `test_polymorphism_relation.py`: (Add description.) (ORGANIZE)
+* `test_relations.py`: Examples of the basic functionality for the `Relation`s defined in `relations.py`.
 
 ### Environment
 

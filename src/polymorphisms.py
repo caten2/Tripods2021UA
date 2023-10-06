@@ -2,7 +2,7 @@
 Polymorphisms
 """
 from relations import Relation
-from discrete_neural_net import Operation
+from operations import Operation, Projection
 import random
 import numpy
 
@@ -128,7 +128,7 @@ class IndicatorPolymorphism(Operation):
             constants. Should contain at least one entry.
         """
 
-        Operation.__init__(self, b[0].arity, lambda *a: indicator_polymorphism(tup, a, b))
+        Operation.__init__(self, len(b), lambda *a: indicator_polymorphism(tup, a, b))
 
 
 def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dominions=False):
@@ -167,6 +167,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
                     endomorphisms_to_use[i] = BlankingEndomorphism(random.choice(constant_relations))
                 if endomorphisms_to_use[i] == 'Swapping':
                     endomorphisms_to_use[i] = SwappingAutomorphism(random.choice(constant_relations))
+            for i in range(len(endomorphisms_to_use)-1):
+                endomorphisms_to_use[i] = endomorphisms_to_use[i][Projection(op.arity, i)]
             yield endomorphisms_to_use[-1][op[endomorphisms_to_use[:-1]]]
         else:
             if op.arity == 1:
@@ -189,13 +191,17 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
 
 def hamming_loss(x, y):
     """
+    Compute the average Hamming loss between two iterables of relations. It is assumed that `x` and `y` have the same
+    length and that corresponding pairs of relations in `x` and `y` have the same arity so that their symmetric
+    difference may be taken. In practice, this is always used when all the relations belonging to `x` and `y` have the
+    same arity.
 
     Args:
-        x:
-        y:
+        x (iterable of Relation): A sequence of relations.
+        y (iterable of Relation): Another sequence of relations.
 
     Returns:
-
+        numpy.float64: The average size of the symmetric difference of corresponding pairs of relations in `x` and `y`.
     """
 
     return numpy.average(tuple(len(rel0 ^ rel1) for (rel0, rel1) in zip(x, y)))
