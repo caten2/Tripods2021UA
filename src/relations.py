@@ -24,6 +24,7 @@ def comparison(method):
     return checked_method
 
 
+
 class Relation:
     """
     A finitary relation on a finite set.
