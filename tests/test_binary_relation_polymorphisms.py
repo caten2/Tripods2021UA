@@ -3,16 +3,16 @@ Tests for binary relation polymorphisms
 """
 from polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism, BlankingEndomorphism,\
     IndicatorPolymorphism
-from mnist_training_binary import binary_mnist_for_zero
+from mnist_training_binary import mnist_binary_relations
 
 # Load some binary images from the modified MNIST training set.
-training_pairs = tuple(binary_mnist_for_zero('train', 100))
+training_pairs = tuple(mnist_binary_relations('train', 100))
 
 # Create a rotation automorphism.
 rot = RotationAutomorphism()
 # Choose an image to rotate.
 print('Original image')
-img = training_pairs[24][0]['x']
+img = training_pairs[24][0]
 print(type(img))
 # Display the original.
 img.show('sparse')
@@ -37,33 +37,33 @@ print('Rotated and reflected image')
 rot(refl(img, ), ).show('sparse')
 
 # Create a swapping automorphism.
-swap = SwappingAutomorphism(training_pairs[37][0]['x'])
+swap = SwappingAutomorphism(training_pairs[37][0])
 # Display the image used for swapping.
 print('Image to use for swap')
-training_pairs[37][0]['x'].show('sparse')
+training_pairs[37][0].show('sparse')
 # Swap an image.
 print('Swapped image')
 swap(img, ).show('sparse')
 
 # Create a blanking endomorphism.
-blank = BlankingEndomorphism(training_pairs[37][0]['x'])
+blank = BlankingEndomorphism(training_pairs[37][0])
 # Display the image used for blanking.
 print('Image to use for blanking')
-training_pairs[37][0]['x'].show('sparse')
+training_pairs[37][0].show('sparse')
 # Swap an image.
 print('Blanked image')
 blank(img, ).show('sparse')
 
 # Create a binary indicator polymorphism.
-ind_pol = IndicatorPolymorphism((0, 0), (training_pairs[2][0]['x'], training_pairs[51][0]['x']))
+ind_pol = IndicatorPolymorphism((0, 0), (training_pairs[2][0], training_pairs[51][0]))
 # Display the images used for dot products.
 print('First image for dot product')
-training_pairs[2][0]['x'].show('sparse')
+training_pairs[2][0].show('sparse')
 print('Second image used for dot product')
-training_pairs[51][0]['x'].show('sparse')
+training_pairs[51][0].show('sparse')
 # Display a pair of images to which to apply the polymorphism.
-img1 = training_pairs[3][0]['x']
-img2 = training_pairs[5][0]['x']
+img1 = training_pairs[3][0]
+img2 = training_pairs[5][0]
 print('First input image')
 img1.show('sparse')
 print('Second input image')
@@ -73,7 +73,7 @@ print('Image obtained from polymorphism')
 ind_pol(img1, img2).show('sparse')
 # Change one of the inputs and check the new output.
 print('New first input')
-img3 = training_pairs[34][0]['x']
+img3 = training_pairs[34][0]
 img3.show('sparse')
 print('New image obtained from polymorphism')
 ind_pol(img3, img2).show('sparse')
