@@ -102,8 +102,11 @@ class NeuralNet:
         current_vals = x
         for layer in self.architecture[1:]:
             for neuron in layer.neurons:
-                tup = tuple(current_vals[input_neuron] for input_neuron in neuron.inputs)
-                current_vals[neuron] = neuron.activation_func(*tup)
+                if neuron.activation_func.arity == 0:
+                    current_vals[neuron] = neuron.activation_func.func
+                else:
+                    tup = tuple(current_vals[input_neuron] for input_neuron in neuron.inputs)
+                    current_vals[neuron] = neuron.activation_func(*tup)
         return tuple(current_vals[neuron] for neuron in self.architecture[-1].neurons)
 
     def empirical_loss(self, training_pairs, loss_func=zero_one_loss):

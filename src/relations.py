@@ -2,7 +2,7 @@
 Relations
 """
 import random
-from itertools import product
+from itertools import product, islice
 from functools import wraps
 
 
@@ -432,3 +432,18 @@ def random_atomic_relations(universe_size, arity):
         tup = tuple(random.randrange(universe_size) for _ in range(arity))
         yield Relation((tup, ), universe_size)
 
+
+def sliced_random_atomic_relations(universe_size, arity, quantity):
+    """
+    Create randomly-chosen atomic relations.
+
+    Args:
+        universe_size:
+        arity:
+        quantity (int):
+
+    Returns:
+
+    """
+
+    return tuple(islice(random_atomic_relations(universe_size, arity), quantity))

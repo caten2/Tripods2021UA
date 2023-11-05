@@ -2,7 +2,7 @@
 Polymorphisms
 """
 from relations import Relation
-from operations import Operation, Projection
+from operations import Operation, Projection, Constant
 import random
 import numpy
 
@@ -160,7 +160,7 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
     yield op
     for _ in range(num_of_neighbors):
         twist = random.choice((0, 1))
-        if twist:
+        if twist and op.arity != 0:
             endomorphisms_to_use = random.choices(endomorphisms, k=op.arity + 1)
             for i in range(len(endomorphisms_to_use)):
                 if endomorphisms_to_use[i] == 'Blanking':
@@ -171,6 +171,8 @@ def polymorphism_neighbor_func(op, num_of_neighbors, constant_relations, use_dom
                 endomorphisms_to_use[i] = endomorphisms_to_use[i][Projection(op.arity, i)]
             yield endomorphisms_to_use[-1][op[endomorphisms_to_use[:-1]]]
         else:
+            if op.arity == 0:
+                yield Constant(op.func ^ random.choice(constant_relations))
             if op.arity == 1:
                 random_endomorphism = random.choice(endomorphisms)
                 if random_endomorphism == 'Blanking':

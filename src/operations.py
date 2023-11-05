@@ -66,8 +66,6 @@ class Operation:
         Composite operations are not memoized, but if their constituent operations are memoized then the composite will
         perform the appropriate lookups when called rather than recomputing those values from scratch.
 
-        Currently, this will not work when applied to a 0-ary operation.
-
         Args:
             ops (Operation | iterable of Operation): The operations with which to form the generalized composite. This
                 should have length `self.arity` and all of its entries should have the same arities.
@@ -76,7 +74,6 @@ class Operation:
             Operation: The result of composing the operations in question.
         """
 
-        assert self.arity > 0
         # When a single operation is being passed we turn it into a list.
         if isinstance(ops, Operation):
             ops = [ops]
@@ -84,7 +81,11 @@ class Operation:
         arities = frozenset(op.arity for op in ops)
         assert len(arities) == 1
         new_arity = tuple(arities)[0]
+        # We treat the case where the resulting operation is nullary separately.
+        if new_arity == 0:
+            return Operation(new_arity, self(*(op() for op in ops)), cache_values=False)
 
+        # Otherwise, we need to define the composite operation as a function.
         def composite(*tup):
             """
             Evaluate the composite operation.
@@ -126,4 +127,4 @@ class Constant(Operation):
     """
 
     def __init__(self, constant, arity=0, cache_values=False):
-        Operation.__init__(self, arity, lambda *x: constant, cache_values)
+        Operation.__init__(self, arity, constant, cache_values)
