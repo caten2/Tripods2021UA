@@ -1,6 +1,7 @@
 """
 Relations
 """
+import random
 from itertools import product
 from functools import wraps
 
@@ -413,3 +414,21 @@ class Relation:
         """
 
         return len(self & other) % 2
+
+
+def random_atomic_relations(universe_size, arity):
+    """
+    Create randomly-chosen atomic relations.
+
+    Args:
+        universe_size:
+        arity:
+
+    Yields:
+
+    """
+
+    while True:
+        tup = tuple(random.randrange(universe_size) for _ in range(arity))
+        yield Relation((tup, ), universe_size)
+

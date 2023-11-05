@@ -1,8 +1,8 @@
 """
 Relations test
 """
-from relations import Relation
-from itertools import product
+from relations import Relation, random_atomic_relations
+from itertools import product, islice
 
 print('Create a binary relation on the set {0,1,2} whose members are the pairs (0,0), (0,1), and (2,0).\n\
 Note that the pair (0,0) is repeated at the end of our list of pairs. Such duplicates are ignored by the constructor\n\
@@ -171,3 +171,12 @@ if Z:
     print('There are members of `Z.tuples`.')
 if Z ^ Z:
     print('This won\'t be printed because `Z ^ Z` is empty.')
+print('')
+
+print('')
+print('We can produce some random relations which each contain only a single tuple.')
+print('')
+random_atomic_rels = islice(random_atomic_relations(5, 7), 12)
+for rel in random_atomic_rels:
+    rel.show()
+    print('')
