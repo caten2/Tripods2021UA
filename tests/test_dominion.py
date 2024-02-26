@@ -1,43 +1,101 @@
-# TODO: Make this into a test script for dominion.py.
-# --------------------test and run functions------------------------------
+"""
+Tests for dominion polymorphisms
+"""
+
+from dominion import *
+from neural_net import Layer, Neuron
+from polymorphisms import RotationAutomorphism, ReflectionAutomorphism, SwappingAutomorphism, BlankingEndomorphism, \
+    IndicatorPolymorphism
+from mnist_training_binary import binary_mnist_zero_one
+
+# --------------- Testing Basic Functionalities ---------------
+
+
+# Thanks to the implementation of relations as sets of tuples, the functions should work the same regardless of arity.
+
+# The sizes of the universe of the relations and the appropriate dominions.
+size1 = 2
+dominion_size1 = size1 ** 2 + 1
+print('The size of the universe:', size1)
+print('The size of the appropriate dominions:', dominion_size1)
+print('We are using the labels 0, 1, and 2 for dominions. Label i corresponds to a relation containing i tuples.')
+
+
+# Assigning a relation to each label. In this test, the set of labels is assumed to be {0, 1, 2}.
+def relabeling1(i):
+    if i == 0:
+        return Relation([], 2, 2)
+    elif i == 1:
+        return Relation([(0, 0)], 2, 2)
+    else:
+        return Relation([(0, 0), (1, 1)], 2, 2)
+
+
+# A pair of relations to use as test inputs.
+relations1 = (Relation([], 2, 2),
+              Relation([], 2, 2))
+
+# Generating a random dominion and printing it in matrix form.
+dominion1 = random_dominion(dominion_size1, range(3), None)
+print('Random dominion:')
+print('\n'.join(map(str, dominion1)))
+
+# The polymorphism associated with dominion1, with respect to the relabeling1.
+poly1 = DominionPolymorphism(dominion1, relabeling1)
+print('The result of applying the corresponding polymorphism to a pair of empty relations:')
+print('-', poly1(*relations1))
+print('This relation corresponds to the label at (0, 0), namely {0}.'.format(dominion1[0][0]))
+
+print('\n{0}\n'.format('-' * 60))
+
+# TODO --------------- Testing on Neural Nets: MULTIPLICATION ---------------
+
+
+# TODO --------------- Testing on Neural Nets: MNIST ---------------
+
 
 # The dimension of an MNIST image.
 mnist_image_size = 28
 # The size of dominions used for MNIST images.
-dominion_size_mnist = mnist_image_size ** 2 + 1
+mnist_dominion_size = mnist_image_size ** 2 + 1
+# The labels used for dominions.
+# The label 0 means an empty relation. A label with pair x, y (possibly x == y) of pairs is the relation that
+# contains x and y.
+mnist_labels = [0] + [((x1, y1), (x2, y2))
+                      for x1 in range(mnist_image_size)
+                      for y1 in range(mnist_image_size)
+                      for x2 in range(mnist_image_size)
+                      for y2 in range(mnist_image_size)]
 
 
-# TODO: The `28` is hardcoded appropriately for MNIST data. Introduce a constant that
-#  holds this value and explain its purpose.
-# Given a tree, generates a set number of dominions and stores them as text files. Note
-# that a folder with the corresponding tree_num must already be set up
-def generate_dominions(tree, labels, tree_num, dominion_num):
-    for i in range(dominion_num):
-        file_name = "Tree" + str(tree_num) + "\\Dominions\\Tree" + str(
-            tree_num) + "-Dominion" + str(i) + ".txt"
-        dominion_file = open(file_name, "w")
-
-        dominion_file.write(str(random_dominion(dominion_size_mnist, labels, tree)))
-
-        dominion_file.close()
+# The relabeling function.
+def mnist_relabeling(i):
+    if i == 0:
+        return Relation([], 28, 2)
+    x, y = i
+    return Relation([x, y], 28, 2)
 
 
-# TODO: Better documentation.
-# Given a tree, generates a set number of homomorphisms and stores them as text files.
-# Note that a folder with the corresponding tree_num must already be set up. n is the
-# dimension of the images.
-def generate_homomorphisms(tree, tree_num, hom_num, n):
-    for i in range(0, hom_num):
-        file_name = "Tree" + str(tree_num) + "\\Homomorphisms\\Tree" + str(
-            tree_num) + "-Homomorphism" + str(i) + ".txt"
-        hom_file = open(file_name, "w")
+# Load some binary images from the modified MNIST training set.
+mnist_training_pairs = tuple(binary_mnist_zero_one(100, 'train'))
 
-        hom_file.write(str(get_homomorphism(tree, n)))
+# Constructing a 3-layer neural network that takes 2 MNIST images of 0s or 1s, trained as follows:
+# - If both relations represent the same digit the output is the full relation.
+# - Otherwise, the output is the empty relation.
 
-        hom_file.close()
+# First layer has 2 inputs.
+mnist_layer0 = Layer(('x0', 'x1'))
+
+# Second layer has 2 neurons.
+mnist_op0 = DominionPolymorphism(random_dominion(mnist_dominion_size, mnist_labels, None), mnist_relabeling)
+mnist_op1 = DominionPolymorphism(random_dominion(mnist_dominion_size, mnist_labels, None), mnist_relabeling)
+mnist_node0 = Neuron(mnist_op0, ('x0', 'x1'))
+mnist_node1 = Neuron(mnist_op1, ('x0', 'x1'))
+mnist_layer1 = [mnist_node0, mnist_node1]
+
+# TODO --------------- Leftover Testing Code ---------------
 
 
-# TODO: Put these test methods in a separate test_dominion.py script.
 """
 #CODE THAT RUNS OR TESTS EXISTING FUNCTIONS:
 
@@ -85,7 +143,7 @@ print(tree.getNeighbors('test1'))
 
 #This chunk of code is to test applyDominion
 #runs dominion reader
-file=open(r"Dominions\Tree0-Dominion4.txt", "r")
+file=open(r"Dominions\\Tree0-Dominion4.txt", "r")
 dominion=readDominion(file)
 
 #constructs two 3x3 images and runs psi_k
