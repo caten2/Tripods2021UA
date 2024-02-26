@@ -7,7 +7,7 @@ Tools for creating 2-dimensional dominions
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from discrete_neural_net import Operation
+from operations import Operation
 from relations import Relation
 
 
@@ -22,7 +22,8 @@ class Graph:
 
     def add_vertex(self, vertex_name):
         if hasattr(self, "vertices"):
-            self.vertices.append(vertex_name)
+            if not vertex_name in self.vertices:
+                self.vertices.append(vertex_name)
         else:
             self.vertices = [vertex_name]
 
@@ -30,6 +31,10 @@ class Graph:
         """
         Adds edges (vertex1, vertex2) and (vertex2, vertex1) to the graph.
         """
+
+        self.add_vertex(vertex1)
+        self.add_vertex(vertex2)
+
         if hasattr(self, "edges"):
             if vertex1 in self.edges:
                 self.edges[vertex1].add(vertex2)
@@ -75,19 +80,37 @@ class Graph:
 
 class DominionPolymorphism(Operation):
 
-    def __init__(self, dominion, alpha):
+    def __init__(self, dominion, relabeling):
+        """
+        Returns a homomorphism from Ham^2 to Ham.
+        Arguments:
+            dominion (list of list).
+            relabeling: a homomorphism from the MCG of the dominion to Ham, i.e. a map from the set of labels
+            in the dominions to the set of relations that preserves adjacency.
+        """
+
         def _func(*relations):
-            # relations should be a tuple of relations
+            # Take a pair of relations, compute the hamming weight of both relations, and map to a new relation
+            # according to the given dominion.
             weights = (hamming_weight(relations[0]), hamming_weight(relations[1]))
-            temp = dominion(weights)
-            return alpha(temp)
+            temp = dominion[weights[0]][weights[1]]
+            return relabeling(temp)
 
         Operation.__init__(self, 2, _func, False)
+
+
+def random_dominion_polymorphism(size, set_of_labels):
+    constraint = random_tree(set_of_labels)
+    dominion, mcg = random_dominion(size ** 2 + 1, set_of_labels, constraint)
+    hom = get_homomorphism(mcg, size)
+    relabeling = lambda x: hom[x]
+    return DominionPolymorphism(dominion, relabeling)
 
 
 # --------------- Generating Dominions --------------
 
 
+# TODO: No need to check partial_row entries for candidates and rejects?
 def new_row(row, set_of_labels, constraint_graph=None):
     """
     Construct a new row for a dominion with a given set of labels and a graph constraining
@@ -103,14 +126,20 @@ def new_row(row, set_of_labels, constraint_graph=None):
             behaves as though the graph is the complete graph on the vertex set
             `set_of_labels'.
     Returns:
-        list: A new row which is permitted to follow `row` in a dominion with the given
-        labels and constraints.
+        (list, list): A new row which is permitted to follow `row` in a dominion with the given
+        labels and constraints, a list of edges to add to the minimal constraint graph
     """
 
     partial_row = []
     n = len(row)
 
+    new_edges = []
+
     for i in range(n):
+        # To determine whether this operation is potentially adding new edges to the MCG.
+        # This can only happen if the entries above the one being constructed in this iteration are identical.
+        potential_new_edges = False
+
         if i == 0:
             candidates = {row[0], row[1]}
 
@@ -128,6 +157,7 @@ def new_row(row, set_of_labels, constraint_graph=None):
 
         # If there is a single candidate and no rejects, we can choose any neighboring label of the candidate.
         if len(candidates) == 1 and len(rejects) == 0:
+            potential_new_edges = True
             if constraint_graph is None:
                 candidates = set_of_labels
             else:
@@ -135,8 +165,12 @@ def new_row(row, set_of_labels, constraint_graph=None):
                     constraint_graph.get_neighbors(list(candidates)[0]))
 
         # Add a random candidate.
-        partial_row += (random.sample(list(candidates), 1))
-    return partial_row
+        [random_candidate] = random.sample(list(candidates), 1)
+        partial_row += [random_candidate]
+
+        if potential_new_edges:
+            new_edges += [(random_candidate, row[i])]
+    return partial_row, new_edges
 
 
 def random_tree(set_of_labels):
@@ -154,6 +188,7 @@ def random_tree(set_of_labels):
     tree = Graph()
     node = labels.pop()
     tree.add_vertex(node)
+    tree.root = node
 
     while len(labels) > 0:
         node = random.choice(tree.vertices)
@@ -164,22 +199,52 @@ def random_tree(set_of_labels):
     return tree
 
 
+def find_root(tree):
+    for v in tree.vertices:
+        if len(tree.get_neighbors(v)) == 1:
+            return v
+
+
 def random_dominion(size, set_of_labels, constraint_graph=None):
     """
     Generates a random dominion given its size, set of labels, and constraint graph.
+
+    Args:
+        size (int): The size of the dominion (size * size).
+        set_of_labels (iterable): The labels used to fill up the dominion.
+        constraint_graph (Graph): A graph on set_of_labels.
+        This argument should be a tree to ensure that no 3-cycles arise in the minimum constraint graph (MCG).
+        If the default value (the empty graph) is given, a random tree will be generated and used instead.
+    Returns:
+        The generated dominion along with its MCG as a tuple (dominion, MCG).
     """
 
+    mcg = Graph()
+
+    # We keep track of the labels in the dominion to update the MCG as we go.
+    label0 = random.choice(tuple(set_of_labels))
+    partial_dominion = [[label0]]
+
     if constraint_graph is None:
-        partial_dominion = [random.choices(tuple(set_of_labels), k=size)]
-    else:
-        partial_dominion = [[random.choice(tuple(set_of_labels))]]
-        for _ in range(size - 1):
-            partial_dominion[0].append(
-                random.choice(constraint_graph.get_neighbors(partial_dominion[0][-1])))
+        constraint_graph = random_tree(set_of_labels)
+
+    last_label = label0
     for _ in range(size - 1):
-        partial_dominion.append(
-            new_row(partial_dominion[-1], set_of_labels, constraint_graph))
-    return partial_dominion
+        new_label = random.choice(constraint_graph.get_neighbors(partial_dominion[0][-1]))
+        partial_dominion[0].append(new_label)
+
+        mcg.add_edge(new_label, last_label)
+        last_label = new_label
+
+    for _ in range(size - 1):
+        next_row, new_edges = new_row(partial_dominion[-1], set_of_labels, constraint_graph)
+        partial_dominion.append(next_row)
+
+        for new_edge in new_edges:
+            x, y = new_edge
+            mcg.add_edge(x, y)
+
+    return partial_dominion, mcg
 
 
 # --------------- Creating Polymorphisms ---------------
@@ -221,21 +286,29 @@ def random_adjacent_relation(relation):
     return relation ^ rand_rel
 
 
+# TODO: Fix
 def get_homomorphism(tree, n):
     """
-    Returns a homomorphism from a tree to the Hamming graph H_n.
+    Returns a random homomorphism from a tree to the Hamming graph H_n.
     """
-    vertex = tree.root
+    if tree.root is not None:
+        vertex = tree.root
+    else:
+        vertex = find_root(tree)
     neighbors = tree.get_neighbors(vertex)
     hom = {int(vertex): random_relation(n)}
+    queue = [(vertex, n) for n in neighbors]
 
-    while neighbors:
-        new_vertex = neighbors[0]
+    while queue:
+        vertex, new_vertex = queue.pop()
+        if vertex == new_vertex:
+            continue
         neighbors = tree.get_neighbors(new_vertex)
         neighbors.remove(vertex)
+        new_queue = [(new_vertex, n) for n in neighbors]
 
         hom.update({int(new_vertex): random_adjacent_relation(hom.get(int(vertex)))})
-        vertex = new_vertex
+        queue += new_queue
 
     return hom
 
