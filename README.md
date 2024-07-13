@@ -28,13 +28,13 @@ The scripts that define basic components of the system are in the `src` folder. 
 the basic functionality of the `NeuralNet` class.
 * `binary_image_polymorphisms.py`: Definitions of polymorphisms of the Hamming graph, as well as a neighbor function for
   the learning algorithm implemented in `neural_net.py`. (ORGANIZE)
-* `neural_net.py`: Definition of the `NeuralNet` class, including feeding forward and learning.
 * `dominion.py`: Tools for creating dominions, a combinatorial object used in the definition of the dominion
   polymorphisms in `polymorphisms.py`. (ORGANIZE)
 * `hyperoctohedral.py`: Definitions of polymorphisms of the Hamming graph which come from the action of the
   hyperoctahedral group. (ORGANIZE)
 * `mnist_training_binary.py`: Describes how to manufacture binary relations from the MNIST dataset which can be passed
   as arguments into the polymorphisms in `polymorphisms.py`.
+* `neural_net.py`: Definition of the `NeuralNet` class, including feeding forward and learning.
 * `operations.py`: Definitions pertaining to the `Operation` class, whose objects are to be thought of as operations in
   the sense of universal algebra/model theory.
 * `polymorphisms.py`: Definitions of polymorphisms of the Hamming graph, as well as a neighbor function for
@@ -53,6 +53,7 @@ The scripts that run various tests and example applications of the system are in
 * `test_binary_relation_polymorphisms`: Examples of the basic functionality for the polymorphisms defined in
 `polymorphisms.py` when applied to binary relations.
 * `test_dominion.py`: (Add description.) (ORGANIZE)
+* `test_dominion_mod_arith.py`: (Add description.) (ORGANIZE)
 * `test_gAlpha.py`: (Add description.) (ORGANIZE)
 * `test_mnist_training_binary.py`: Verification that MNIST training data is being loaded correctly from the training
 dataset.

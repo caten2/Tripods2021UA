@@ -24,7 +24,6 @@ def comparison(method):
     return checked_method
 
 
-
 class Relation:
     """
     A finitary relation on a finite set.
@@ -173,7 +172,7 @@ class Relation:
                 output = '\\begin{bmatrix}'
                 for row in range(self.universe_size):
                     output += '&'.join(map(str, (int((row, column) in self) for column in range(self.universe_size))))
-                    if row != self.universe_size-1:
+                    if row != self.universe_size - 1:
                         output += '\\\\'
                 output += '\\end{bmatrix}'
                 print(output)

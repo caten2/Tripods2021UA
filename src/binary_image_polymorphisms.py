@@ -2,10 +2,8 @@
 Polymorphisms for binary images
 """
 import random
-
-from discrete_neural_net import Operation
+from operations import Operation
 from itertools import product
-#from dominion import getGAlpha
 
 
 def quarter_turn(x):
