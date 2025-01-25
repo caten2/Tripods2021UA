@@ -122,7 +122,7 @@ def build_training_data(pairs, data_type, cutoff=127):
         new_image = next(data)
         substitution_dic[new_image[1]] = new_image[0]
         yield {'x{}'.format(i): substitution_dic[pair[0][i]] for i in range(len(pair[0]))}, \
-              tuple(substitution_dic[pair[1][i]] for i in range(len(pair[1])))
+            tuple(substitution_dic[pair[1][i]] for i in range(len(pair[1])))
 
 
 def binary_mnist_zero_one(quantity_of_zeroes, data_type, quantity_of_ones=None, cutoff=127):

@@ -3,80 +3,78 @@ Dominion
 
 Tools for creating 2-dimensional dominions
 """
-
 import random
 import matplotlib.pyplot as plt
 import numpy as np
 from operations import Operation
 from relations import Relation
 
-
-# --------------- Classes -----------------
-
-
-class Graph:
-    def __init__(self):
-        self.root = None
-        self.vertices = []
-        self.edges = {}
-
-    def add_vertex(self, vertex_name):
-        if hasattr(self, "vertices"):
-            if not vertex_name in self.vertices:
-                self.vertices.append(vertex_name)
-        else:
-            self.vertices = [vertex_name]
-
-    def add_edge(self, vertex1, vertex2):
-        """
-        Adds edges (vertex1, vertex2) and (vertex2, vertex1) to the graph.
-        """
-
-        self.add_vertex(vertex1)
-        self.add_vertex(vertex2)
-
-        if hasattr(self, "edges"):
-            if vertex1 in self.edges:
-                self.edges[vertex1].add(vertex2)
-            else:
-                self.edges.update({vertex1: {vertex2}})
-            if vertex2 in self.edges:
-                self.edges[vertex2].add(vertex1)
-            else:
-                self.edges.update({vertex2: {vertex1}})
-        else:
-            self.edges = {vertex1: {vertex2}, vertex2: {vertex1}}
-
-    def get_neighbors(self, vertex1):
-        return list(self.edges[vertex1])
-
-    def __str__(self):
-        vertices = ""
-        edges = ""
-        if hasattr(self, "vertices"):
-            vertices = self.vertices
-        if hasattr(self, "edges"):
-            edges = self.edges
-        return f'Vertices: {vertices}\nEdges: {edges}'
-
-    def set_root(self, vertex):
-        self.root = vertex
-
-    def make_tree_file(self, tree_num):
-        file_name = file_name_tree(tree_num)
-        tree_file = open(file_name, "w")
-
-        vertices = ""
-        edges = ""
-        if hasattr(self, "vertices"):
-            vertices = self.vertices
-        if hasattr(self, "edges"):
-            edges = self.edges
-
-        tree_file.write(f'{vertices}\n{edges}')
-
-        tree_file.close()
-
+# class Graph:
+#     """
+#
+#     """
+#
+#     def __init__(self, root):
+#         self.root = None
+#         self.vertices = []
+#         self.edges = {}
+#
+#     def add_vertex(self, vertex_name):
+#         if hasattr(self, "vertices"):
+#             if vertex_name not in self.vertices:
+#                 self.vertices.append(vertex_name)
+#         else:
+#             self.vertices = [vertex_name]
+#
+#     def add_edge(self, vertex1, vertex2):
+#         """
+#         Adds edges (vertex1, vertex2) and (vertex2, vertex1) to the graph.
+#         """
+#
+#         self.add_vertex(vertex1)
+#         self.add_vertex(vertex2)
+#
+#         if hasattr(self, "edges"):
+#             if vertex1 in self.edges:
+#                 self.edges[vertex1].add(vertex2)
+#             else:
+#                 self.edges.update({vertex1: {vertex2}})
+#             if vertex2 in self.edges:
+#                 self.edges[vertex2].add(vertex1)
+#             else:
+#                 self.edges.update({vertex2: {vertex1}})
+#         else:
+#             self.edges = {vertex1: {vertex2}, vertex2: {vertex1}}
+#
+#     def get_neighbors(self, vertex1):
+#         return list(self.edges[vertex1])
+#
+#     def __str__(self):
+#         vertices = ""
+#         edges = ""
+#         if hasattr(self, "vertices"):
+#             vertices = self.vertices
+#         if hasattr(self, "edges"):
+#             edges = self.edges
+#         return f'Vertices: {vertices}\nEdges: {edges}'
+#
+#     def set_root(self, vertex):
+#         self.root = vertex
+#
+#     def make_tree_file(self, tree_num):
+#         file_name = file_name_tree(tree_num)
+#         tree_file = open(file_name, "w")
+#
+#         vertices = ""
+#         edges = ""
+#         if hasattr(self, "vertices"):
+#             vertices = self.vertices
+#         if hasattr(self, "edges"):
+#             edges = self.edges
+#
+#         tree_file.write(f'{vertices}\n{edges}')
+#
+#         tree_file.close()
 
 class DominionPolymorphism(Operation):
 
@@ -92,7 +90,7 @@ class DominionPolymorphism(Operation):
         def _func(*relations):
             # Take a pair of relations, compute the hamming weight of both relations, and map to a new relation
             # according to the given dominion.
-            weights = (hamming_weight(relations[0]), hamming_weight(relations[1]))
+            weights = (len(relations[0]), len(relations[1]))
             temp = dominion[weights[0]][weights[1]]
             return relabeling(temp)
 
@@ -103,8 +101,7 @@ def random_dominion_polymorphism(size, set_of_labels):
     constraint = random_tree(set_of_labels)
     dominion, mcg = random_dominion(size ** 2 + 1, set_of_labels, constraint)
     hom = get_homomorphism(mcg, size)
-    relabeling = lambda x: hom[x]
-    return DominionPolymorphism(dominion, relabeling)
+    return DominionPolymorphism(dominion, lambda x: hom[x])
 
 
 # --------------- Generating Dominions --------------
@@ -173,36 +170,36 @@ def new_row(row, set_of_labels, constraint_graph=None):
     return partial_row, new_edges
 
 
-def random_tree(set_of_labels):
-    """
-    Construct a random tree on a given set of labels.
+# def random_tree(set_of_labels):
+#     """
+#     Construct a random tree on a given set of labels.
+#
+#     Args:
+#         set_of_labels (iterable): The vertex labels for the tree.
+#     Returns:
+#         Graph: A randomly-chosen tree on the given vertices.
+#     """
+#
+#     labels = list(set_of_labels)
+#
+#     tree = Graph()
+#     node = labels.pop()
+#     tree.add_vertex(node)
+#     tree.root = node
+#
+#     while len(labels) > 0:
+#         node = random.choice(tree.vertices)
+#         for _ in range(random.randint(1, len(labels))):
+#             neighbor = labels.pop()
+#             tree.add_vertex(neighbor)
+#             tree.add_edge(node, neighbor)
+#     return tree
 
-    Args:
-        set_of_labels (iterable): The vertex labels for the tree.
-    Returns:
-        Graph: A randomly-chosen tree on the given vertices.
-    """
 
-    labels = list(set_of_labels)
-
-    tree = Graph()
-    node = labels.pop()
-    tree.add_vertex(node)
-    tree.root = node
-
-    while len(labels) > 0:
-        node = random.choice(tree.vertices)
-        for _ in range(random.randint(1, len(labels))):
-            neighbor = labels.pop()
-            tree.add_vertex(neighbor)
-            tree.add_edge(node, neighbor)
-    return tree
-
-
-def find_root(tree):
-    for v in tree.vertices:
-        if len(tree.get_neighbors(v)) == 1:
-            return v
+# def find_root(tree):
+#     for v in tree.vertices:
+#         if len(tree.get_neighbors(v)) == 1:
+#             return v
 
 
 def random_dominion(size, set_of_labels, constraint_graph=None):
@@ -245,17 +242,6 @@ def random_dominion(size, set_of_labels, constraint_graph=None):
             mcg.add_edge(x, y)
 
     return partial_dominion, mcg
-
-
-# --------------- Creating Polymorphisms ---------------
-
-
-def hamming_weight(relation):
-    """
-    Returns the Hamming weight of a binary relation.
-    """
-    return len(relation)
-
 
 def random_relation(universe_size):
     """
